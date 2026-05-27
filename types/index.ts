@@ -54,6 +54,7 @@ export interface Category {
   id: string
   name: string
   iconName: string
+  defaultPrice: number
   _count?: { projects: number }
 }
 

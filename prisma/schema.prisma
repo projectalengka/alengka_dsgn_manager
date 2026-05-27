@@ -28,9 +28,10 @@ model Project {
 
 model Category {
   id       String    @id
-  name     String    @unique
-  iconName String    @default("Tag")
-  projects Project[]
+  name         String    @unique
+  iconName     String    @default("Tag")
+  defaultPrice Float     @default(0)
+  projects     Project[]
 
   @@map("categories")
 }

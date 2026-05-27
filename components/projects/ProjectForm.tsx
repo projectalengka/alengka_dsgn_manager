@@ -56,8 +56,9 @@ export default function ProjectForm({ isOpen, onClose, onSave, projectToEdit, ca
       setClientId(null)
       setClientSearch("")
       setProjectTitle("")
-      setCategoryId(categories[0]?.id || "")
-      setPrice("")
+      const defaultCat = categories[0]
+      setCategoryId(defaultCat?.id || "")
+      setPrice(defaultCat?.defaultPrice ? defaultCat.defaultPrice : "")
       setStatus("On Progress")
       setDeadline("")
       setNotes("")
@@ -131,6 +132,18 @@ export default function ProjectForm({ isOpen, onClose, onSave, projectToEdit, ca
   }
 
   if (!isOpen) return null
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newCatId = e.target.value
+    setCategoryId(newCatId)
+    const cat = categories.find((c) => c.id === newCatId)
+    // Always overwrite price if they change category, unless it's a very specific custom workflow, 
+    // but the instruction says "kolom harga otomatis terisis sesuai data asli kategori tapi tetap bisa diedit"
+    // Setting it whenever category changes makes sense so they see the new default price.
+    if (cat?.defaultPrice) {
+      setPrice(cat.defaultPrice)
+    }
+  }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -234,7 +247,7 @@ export default function ProjectForm({ isOpen, onClose, onSave, projectToEdit, ca
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <div className="space-y-1.5">
               <label htmlFor="category-select" className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-400 dark:text-neutral-500">Kategori</label>
-              <select id="category-select" value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className="w-full bg-[#f5f5f7] dark:bg-[#121214] border border-neutral-200/60 dark:border-neutral-850 rounded-lg text-xs px-4 py-2.5 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-neutral-350 dark:focus:border-neutral-700 cursor-pointer transition-all">
+              <select id="category-select" value={categoryId} onChange={handleCategoryChange} className="w-full bg-[#f5f5f7] dark:bg-[#121214] border border-neutral-200/60 dark:border-neutral-850 rounded-lg text-xs px-4 py-2.5 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-neutral-350 dark:focus:border-neutral-700 cursor-pointer transition-all">
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}

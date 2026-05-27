@@ -4,6 +4,7 @@ import { useState } from "react"
 import type { Category } from "@/types"
 import { Plus, Trash2, AlertTriangle, X, Check } from "lucide-react"
 import { renderIcon } from "@/lib/icons"
+import { formatCurrency } from "@/lib/utils"
 import { createCategory, updateCategory, deleteCategory } from "@/actions/categories"
 
 const AVAILABLE_ICONS = [
@@ -26,6 +27,7 @@ interface CategoryManagerProps {
 
 export default function CategoryManager({ categories, onChange }: CategoryManagerProps) {
   const [newName, setNewName] = useState("")
+  const [defaultPrice, setDefaultPrice] = useState("")
   const [selectedIcon, setSelectedIcon] = useState("Tag")
   const [editing, setEditing] = useState<Category | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null)
@@ -39,20 +41,21 @@ export default function CategoryManager({ categories, onChange }: CategoryManage
     const exists = categories.some((c) => c.name.toLowerCase() === name.toLowerCase() && c.id !== editing?.id)
     if (exists) { setError("Nama kategori sudah ada."); return }
     try {
+      const priceNum = parseFloat(defaultPrice) || 0
       if (editing) {
-        await updateCategory(editing.id, name, selectedIcon); setEditing(null)
+        await updateCategory(editing.id, name, selectedIcon, priceNum); setEditing(null)
       } else {
-        await createCategory(name, selectedIcon)
+        await createCategory(name, selectedIcon, priceNum)
       }
-      setNewName(""); setSelectedIcon("Tag")
+      setNewName(""); setDefaultPrice(""); setSelectedIcon("Tag")
       onChange?.()
     } catch {
       setError("Gagal simpan kategori.")
     }
   }
 
-  const startEdit = (cat: Category) => { setEditing(cat); setNewName(cat.name); setSelectedIcon(cat.iconName); setError("") }
-  const cancelEdit = () => { setEditing(null); setNewName(""); setSelectedIcon("Tag"); setError("") }
+  const startEdit = (cat: Category) => { setEditing(cat); setNewName(cat.name); setDefaultPrice(cat.defaultPrice?.toString() || ""); setSelectedIcon(cat.iconName); setError("") }
+  const cancelEdit = () => { setEditing(null); setNewName(""); setDefaultPrice(""); setSelectedIcon("Tag"); setError("") }
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -75,6 +78,10 @@ export default function CategoryManager({ categories, onChange }: CategoryManage
             <div className="space-y-2">
               <label className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-450 dark:text-neutral-500">Nama Kategori</label>
               <input type="text" required placeholder="cth: Desain Logo" value={newName} onChange={(e) => setNewName(e.target.value)} className="w-full bg-[#f5f5f7] dark:bg-[#121214]/60 border border-neutral-200/60 dark:border-neutral-850/40 text-xs px-3.5 py-2.5 rounded-lg text-neutral-800 dark:text-neutral-200 placeholder-neutral-400 focus:outline-none focus:border-neutral-350 dark:focus:border-neutral-700 transition-all" />
+            </div>
+            <div className="space-y-2">
+              <label className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-450 dark:text-neutral-500">Harga Default (Opsional)</label>
+              <input type="number" placeholder="cth: 500000" value={defaultPrice} onChange={(e) => setDefaultPrice(e.target.value)} className="w-full bg-[#f5f5f7] dark:bg-[#121214]/60 border border-neutral-200/60 dark:border-neutral-850/40 text-xs px-3.5 py-2.5 rounded-lg text-neutral-800 dark:text-neutral-200 placeholder-neutral-400 focus:outline-none focus:border-neutral-350 dark:focus:border-neutral-700 transition-all" />
             </div>
             <div className="space-y-2.5">
               <label className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-450 dark:text-neutral-500">Pilih Ikon</label>
@@ -108,7 +115,9 @@ export default function CategoryManager({ categories, onChange }: CategoryManage
                   </div>
                   <div className="min-w-0">
                     <span className="text-xs font-semibold text-neutral-800 dark:text-neutral-100 block truncate">{cat.name}</span>
-                    <span className="text-[10px] text-neutral-400 dark:text-neutral-500 block">{cat._count?.projects || 0} proyek</span>
+                    <span className="text-[10px] text-neutral-400 dark:text-neutral-500 block">
+                      {cat._count?.projects || 0} proyek {cat.defaultPrice > 0 && `• ${formatCurrency(cat.defaultPrice)}`}
+                    </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5">
