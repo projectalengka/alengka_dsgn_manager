@@ -47,10 +47,9 @@ export async function updateCategory(id: string, name: string, iconName: string,
 }
 
 export async function deleteCategory(id: string): Promise<void> {
-  const projectCount = await prisma.project.count({ where: { categoryId: id } })
-  if (projectCount > 0) {
-    throw new Error(`Tidak bisa hapus kategori: ${projectCount} proyek masih menggunakannya.`)
-  }
-  await prisma.category.delete({ where: { id } })
+  await prisma.$transaction([
+    prisma.project.deleteMany({ where: { categoryId: id } }),
+    prisma.category.delete({ where: { id } })
+  ])
   revalidatePath("/")
 }
