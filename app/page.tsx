@@ -195,7 +195,7 @@ export default function Home() {
                   <Columns className="w-4 h-4" />
                 </button>
               )}
-              {activeTab === "dashboard" && <>Beranda <span className="font-serif italic font-normal text-neutral-400 dark:text-neutral-500">Desk</span></>}
+              {activeTab === "dashboard" && <>Beranda <span className="font-serif italic font-normal text-neutral-400 dark:text-neutral-500">Studio</span></>}
               {activeTab === "projects" && <>Proyek <span className="font-serif italic font-normal text-neutral-400 dark:text-neutral-500">Desain</span></>}
               {activeTab === "crm" && <>Klien <span className="font-serif italic font-normal text-neutral-400 dark:text-neutral-500">CRM</span></>}
               {activeTab === "analytics" && <>Laporan <span className="font-serif italic font-normal text-neutral-400 dark:text-neutral-500">Keuangan</span></>}

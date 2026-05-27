@@ -23,7 +23,7 @@ export default function StatsGrid({ stats }: StatsGridProps) {
           <div className="space-y-1">
             <span className="text-[8.5px] text-neutral-400 dark:text-neutral-500 tracking-[0.2em] uppercase font-semibold block">PENDAPATAN</span>
             <div className="text-3xl sm:text-4xl font-light tracking-tight text-neutral-950 dark:text-white">{formatCurrency(stats.totalIncome)}</div>
-            <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium">Total dari proyek yang udah selesai.</span>
+            <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium">Total dari proyek yang sudah selesai.</span>
           </div>
           <div className="space-y-1 pt-6 md:pt-0 md:pl-8">
             <span className="text-[8.5px] text-neutral-400 dark:text-neutral-500 tracking-[0.2em] uppercase font-semibold block">ESTIMASI</span>
