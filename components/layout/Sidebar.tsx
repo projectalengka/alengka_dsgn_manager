@@ -1,6 +1,6 @@
 "use client"
 
-import { LayoutDashboard, FolderDot, BarChart3, Tag, Columns } from "lucide-react"
+import { LayoutDashboard, FolderDot, BarChart3, Tag, Columns, Users } from "lucide-react"
 import type { Tab } from "@/types"
 
 interface SidebarProps {
@@ -11,9 +11,10 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { id: "dashboard" as Tab, label: "Beranda", icon: <LayoutDashboard className="w-4 h-4 stroke-[1.5]" /> },
-  { id: "projects" as Tab, label: "Proyek", icon: <FolderDot className="w-4 h-4 stroke-[1.5]" /> },
-  { id: "analytics" as Tab, label: "Laporan", icon: <BarChart3 className="w-4 h-4 stroke-[1.5]" /> },
+  { id: "dashboard" as Tab, label: "Beranda",  icon: <LayoutDashboard className="w-4 h-4 stroke-[1.5]" /> },
+  { id: "projects"  as Tab, label: "Proyek",   icon: <FolderDot className="w-4 h-4 stroke-[1.5]" /> },
+  { id: "crm"       as Tab, label: "Klien",    icon: <Users className="w-4 h-4 stroke-[1.5]" /> },
+  { id: "analytics" as Tab, label: "Laporan",  icon: <BarChart3 className="w-4 h-4 stroke-[1.5]" /> },
   { id: "categories" as Tab, label: "Kategori", icon: <Tag className="w-4 h-4 stroke-[1.5]" /> },
 ]
 

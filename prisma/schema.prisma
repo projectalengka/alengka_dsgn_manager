@@ -10,6 +10,8 @@ datasource db {
 model Project {
   id           String   @id @default(uuid())
   clientName   String
+  clientId     String?
+  client       Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
   projectTitle String
   categoryId   String
   category     Category @relation(fields: [categoryId], references: [id])
@@ -17,7 +19,7 @@ model Project {
   status       String   @default("On Progress")
   deadline     DateTime
   notes        String   @default("") @db.Text
-  previewImage String?  @db.Text
+  referenceLink String?  @db.Text
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -31,4 +33,32 @@ model Category {
   projects Project[]
 
   @@map("categories")
+}
+
+model Client {
+  id          String    @id @default(uuid())
+  name        String
+  phone       String    @default("")
+  email       String    @default("")
+  address     String    @default("") @db.Text
+  company     String    @default("")
+  notes       String    @default("") @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  projects    Project[]
+
+  @@map("clients")
+}
+
+model Studio {
+  id        String   @id @default("default")
+  name      String   @default("Design Studio")
+  tagline   String   @default("Creative Design Solutions")
+  address   String   @default("Jakarta, Indonesia")
+  contact   String   @default("studio@example.com | +62 812-3456-7890")
+  bankInfo  String   @default("BCA 872-0492-911 a.n. Design Studio")
+  logo      String   @default("") @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@map("studio")
 }

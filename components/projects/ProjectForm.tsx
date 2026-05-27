@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect, type ChangeEvent, type FormEvent } from "react"
-import type { Project, Category, ProjectFormData, ProjectStatus } from "@/types"
-import { X, Upload, FileImage } from "lucide-react"
+import { useState, useEffect, useRef, type ChangeEvent, type FormEvent } from "react"
+import type { Project, Category, ProjectFormData, ProjectStatus, Client } from "@/types"
+import { X, Search, Users, Link as LinkIcon } from "lucide-react"
+import { searchClients } from "@/actions/clients"
 
 interface ProjectFormProps {
   isOpen: boolean
@@ -10,6 +11,7 @@ interface ProjectFormProps {
   onSave: (data: ProjectFormData) => void
   projectToEdit?: Project | null
   categories: Category[]
+  clients?: Client[]
 }
 
 const STATUS_OPTS = [
@@ -20,58 +22,115 @@ const STATUS_OPTS = [
 ]
 
 export default function ProjectForm({ isOpen, onClose, onSave, projectToEdit, categories }: ProjectFormProps) {
-  const [clientName, setClientName] = useState("")
+  const [clientName, setClientName]   = useState("")
+  const [clientId, setClientId]       = useState<string | null>(null)
+  const [clientSearch, setClientSearch] = useState("")
+  const [clientSuggestions, setClientSuggestions] = useState<Client[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [searchLoading, setSearchLoading] = useState(false)
+  const clientInputRef = useRef<HTMLInputElement>(null)
+  const suggestionsRef = useRef<HTMLDivElement>(null)
   const [projectTitle, setProjectTitle] = useState("")
-  const [categoryId, setCategoryId] = useState("")
-  const [price, setPrice] = useState<number | "">("")
-  const [status, setStatus] = useState<ProjectStatus>("On Progress")
-  const [deadline, setDeadline] = useState("")
-  const [notes, setNotes] = useState("")
-  const [previewImage, setPreviewImage] = useState("")
-  const [imageError, setImageError] = useState("")
-  const [saving, setSaving] = useState(false)
+  const [categoryId, setCategoryId]   = useState("")
+  const [price, setPrice]             = useState<number | "">("")
+  const [status, setStatus]           = useState<ProjectStatus>("On Progress")
+  const [deadline, setDeadline]       = useState("")
+  const [notes, setNotes]             = useState("")
+  const [referenceLink, setReferenceLink] = useState("")
+  const [saving, setSaving]           = useState(false)
 
   useEffect(() => {
     if (projectToEdit) {
       setClientName(projectToEdit.clientName)
+      setClientId(projectToEdit.clientId ?? null)
+      setClientSearch(projectToEdit.clientName)
       setProjectTitle(projectToEdit.projectTitle)
       setCategoryId(projectToEdit.categoryId)
       setPrice(projectToEdit.price)
       setStatus(projectToEdit.status)
       setDeadline(new Date(projectToEdit.deadline).toISOString().split("T")[0])
       setNotes(projectToEdit.notes)
-      setPreviewImage(projectToEdit.previewImage || "")
+      setReferenceLink(projectToEdit.referenceLink || "")
     } else {
       setClientName("")
+      setClientId(null)
+      setClientSearch("")
       setProjectTitle("")
       setCategoryId(categories[0]?.id || "")
       setPrice("")
       setStatus("On Progress")
       setDeadline("")
       setNotes("")
-      setPreviewImage("")
+      setReferenceLink("")
     }
-    setImageError("")
+    setShowSuggestions(false)
   }, [projectToEdit, isOpen, categories])
 
-  if (!isOpen) return null
+  // Debounced client search
+  useEffect(() => {
+    // Jika clientId sudah terset = klien sudah dipilih, tidak perlu search lagi
+    if (clientId !== null) {
+      setClientSuggestions([])
+      return
+    }
+    // Input kosong: clear suggestions
+    if (!clientSearch.trim()) {
+      setClientSuggestions([])
+      setShowSuggestions(false)
+      return
+    }
+    const t = setTimeout(async () => {
+      setSearchLoading(true)
+      try {
+        const results = await searchClients(clientSearch)
+        setClientSuggestions(results)
+        setShowSuggestions(results.length > 0)
+      } finally { setSearchLoading(false) }
+    }, 250)
+    return () => clearTimeout(t)
+  }, [clientSearch, clientId])
 
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setImageError("")
-    const file = e.target.files?.[0]
-    if (!file) return
-    if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
-      setImageError("Format harus JPG atau PNG.")
+  // Tampilkan semua klien saat input difokus & kosong
+  const handleClientFocus = async () => {
+    if (clientId || clientSearch.trim()) {
+      if (clientSuggestions.length > 0) setShowSuggestions(true)
       return
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setImageError("Maksimal 5MB.")
-      return
-    }
-    const reader = new FileReader()
-    reader.onload = () => { if (typeof reader.result === "string") setPreviewImage(reader.result) }
-    reader.readAsDataURL(file)
+    setSearchLoading(true)
+    try {
+      const results = await searchClients("")  // empty = return all (max 10)
+      setClientSuggestions(results)
+      setShowSuggestions(results.length > 0)
+    } finally { setSearchLoading(false) }
   }
+
+  // Close suggestions on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (!suggestionsRef.current?.contains(e.target as Node) &&
+          !clientInputRef.current?.contains(e.target as Node)) {
+        setShowSuggestions(false)
+      }
+    }
+    document.addEventListener("mousedown", handler)
+    return () => document.removeEventListener("mousedown", handler)
+  }, [])
+
+  const selectClient = (c: Client) => {
+    setClientName(c.name)
+    setClientId(c.id)
+    setClientSearch(c.name)
+    setShowSuggestions(false)
+    setClientSuggestions([])
+  }
+
+  const handleClientInputChange = (val: string) => {
+    setClientSearch(val)
+    setClientName(val)
+    setClientId(null)  // unlink jika user mengetik manual
+  }
+
+  if (!isOpen) return null
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -80,13 +139,14 @@ export default function ProjectForm({ isOpen, onClose, onSave, projectToEdit, ca
     try {
       await onSave({
         clientName: clientName.trim(),
+        clientId: clientId || null,
         projectTitle: projectTitle.trim(),
         categoryId,
         price: Number(price),
         status,
         deadline,
         notes: notes.trim(),
-        previewImage: previewImage || undefined,
+        referenceLink: referenceLink.trim() || undefined,
       })
       onClose()
     } finally {
@@ -112,9 +172,58 @@ export default function ProjectForm({ isOpen, onClose, onSave, projectToEdit, ca
 
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="space-y-1.5">
-              <label htmlFor="client-name" className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-400 dark:text-neutral-500">Nama Klien *</label>
-              <input id="client-name" type="text" placeholder="cth: Nexa Group" value={clientName} onChange={(e) => setClientName(e.target.value)} required className="w-full bg-[#f5f5f7] dark:bg-[#121214] border border-neutral-200/60 dark:border-neutral-850 rounded-lg text-xs px-4 py-2.5 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:border-neutral-350 dark:focus:border-neutral-700 transition-all" />
+            {/* Client search field */}
+            <div className="space-y-1.5 relative">
+              <label className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-400 dark:text-neutral-500">
+                Nama Klien *
+              </label>
+              <div className="relative">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3 h-3 text-neutral-400" />
+                <input
+                  ref={clientInputRef}
+                  id="client-name"
+                  type="text"
+                  placeholder="Cari atau ketik nama klien..."
+                  value={clientSearch}
+                  onChange={e => handleClientInputChange(e.target.value)}
+                  onFocus={handleClientFocus}
+                  required
+                  className="w-full bg-[#f5f5f7] dark:bg-[#121214] border border-neutral-200/60 dark:border-neutral-850 rounded-lg text-xs pl-9 pr-4 py-2.5 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:border-neutral-350 dark:focus:border-neutral-700 transition-all"
+                />
+                {searchLoading && <div className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 border-2 border-neutral-400 border-t-transparent rounded-full animate-spin" />}
+              </div>
+              {/* Linked badge */}
+              {clientId && (
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-[9px] font-semibold text-emerald-700 dark:text-emerald-400 rounded-full">
+                    <Users className="w-2.5 h-2.5" /> Tertaut dari CRM
+                  </span>
+                  <button type="button" onClick={() => { setClientId(null) }} className="text-[9px] text-neutral-400 hover:text-neutral-600 cursor-pointer">Lepas</button>
+                </div>
+              )}
+              {/* Suggestions dropdown */}
+              {showSuggestions && (
+                <div ref={suggestionsRef} className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#0d0d0f] border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl z-50 overflow-hidden max-h-52 overflow-y-auto">
+                  {clientSuggestions.map(c => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onMouseDown={() => selectClient(c)}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors text-left cursor-pointer"
+                    >
+                      <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[9px] font-bold text-white shrink-0"
+                        style={{ background: `hsl(${c.name.split("").reduce((a,ch)=>a+ch.charCodeAt(0),0)%360}, 55%, 48%)` }}>
+                        {c.name.split(" ").slice(0,2).map(w=>w[0]).join("").toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-xs font-semibold text-neutral-900 dark:text-white truncate">{c.name}</div>
+                        <div className="text-[9px] text-neutral-400 truncate">{c.company || c.phone || c.email}</div>
+                      </div>
+                      <span className="ml-auto text-[9px] text-neutral-400 shrink-0">{c._count?.projects ?? 0} proyek</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="space-y-1.5">
               <label htmlFor="project-title" className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-400 dark:text-neutral-500">Judul Proyek *</label>
@@ -160,39 +269,19 @@ export default function ProjectForm({ isOpen, onClose, onSave, projectToEdit, ca
             <textarea id="project-notes" rows={4} placeholder="Catatan tambahan..." value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full bg-[#f5f5f7] dark:bg-[#121214] border border-neutral-200/60 dark:border-neutral-850 rounded-lg text-xs px-4 py-2.5 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:border-neutral-350 dark:focus:border-neutral-700 resize-y leading-relaxed" />
           </div>
 
-          <div className="space-y-2.5">
-            <span className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-400 dark:text-neutral-500">Gambar (Opsional)</span>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-center">
-              <div className="relative border border-dashed border-neutral-200 dark:border-neutral-850 bg-neutral-50/20 dark:bg-[#121214]/15 hover:bg-neutral-100/60 dark:hover:bg-neutral-900/30 rounded-lg p-6 text-center transition-all cursor-pointer">
-                <input type="file" accept="image/png, image/jpeg, image/jpg" onChange={handleImageChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                <div className="space-y-2.5">
-                  <div className="mx-auto w-8 h-8 rounded-md bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-850 flex items-center justify-center text-neutral-400 group-hover:text-neutral-800 dark:group-hover:text-white transition-colors shadow-xs">
-                    <Upload className="w-3.5 h-3.5" />
-                  </div>
-                  <div>
-                    <span className="text-xs font-semibold text-neutral-750 dark:text-neutral-300 block">Unggah Gambar</span>
-                    <span className="text-[10px] text-neutral-450 dark:text-neutral-500 block mt-0.5">JPG/PNG, maks 5MB</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center justify-center">
-                {previewImage ? (
-                  <div className="relative border border-neutral-150 dark:border-neutral-900 bg-neutral-55 dark:bg-neutral-950 rounded-lg p-3 w-full flex flex-col items-center">
-                    <img src={previewImage} alt="Pratinjau" className="max-h-24 w-auto rounded object-contain border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xs" />
-                    <div className="mt-2.5 flex items-center justify-between w-full">
-                      <span className="text-[9px] font-mono text-neutral-400 dark:text-neutral-500 uppercase tracking-widest truncate max-w-[150px]">Gambar</span>
-                      <button type="button" onClick={() => setPreviewImage("")} className="text-[10px] text-red-500 hover:text-red-700 font-medium cursor-pointer">Hapus</button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="border border-neutral-150 dark:border-neutral-900 bg-[#f5f5f7]/40 dark:bg-neutral-950/20 rounded-lg w-full h-28 flex flex-col items-center justify-center p-4 text-center">
-                    <FileImage className="w-5 h-5 text-neutral-300 dark:text-neutral-800 mb-1.5" />
-                    <span className="text-[10px] text-neutral-400 dark:text-neutral-500 leading-normal">Belum ada gambar</span>
-                  </div>
-                )}
-              </div>
+          <div className="space-y-1.5">
+            <label htmlFor="project-link" className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-400 dark:text-neutral-500">Link Referensi (Opsional)</label>
+            <div className="relative">
+              <LinkIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400" />
+              <input
+                id="project-link"
+                type="url"
+                placeholder="Contoh: https://docs.google.com/..."
+                value={referenceLink}
+                onChange={(e) => setReferenceLink(e.target.value)}
+                className="w-full bg-[#f5f5f7] dark:bg-[#121214] border border-neutral-200/60 dark:border-neutral-850 rounded-lg text-xs pl-10 pr-4 py-2.5 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:border-neutral-350 dark:focus:border-neutral-700 transition-all"
+              />
             </div>
-            {imageError && <p className="text-[11px] text-red-500 font-medium">{imageError}</p>}
           </div>
 
           <div className="border-t border-neutral-100 dark:border-neutral-900/60 pt-6 flex items-center justify-end gap-3">

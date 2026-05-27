@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
-import type { Project, Category, Tab, ProjectFormData, ProjectStatus, DashboardStats } from "@/types"
+import type { Project, Category, Client, Tab, ProjectFormData, ProjectStatus, DashboardStats } from "@/types"
 import { getProjects, createProject, updateProject, deleteProject, updateProjectStatus } from "@/actions/projects"
 import { getCategories } from "@/actions/categories"
+import { getClients } from "@/actions/clients"
 import Sidebar from "@/components/layout/Sidebar"
 import StatsGrid from "@/components/dashboard/StatsGrid"
 import AnalyticsSection from "@/components/dashboard/AnalyticsSection"
@@ -11,14 +12,16 @@ import ProjectList from "@/components/projects/ProjectList"
 import ProjectForm from "@/components/projects/ProjectForm"
 import ConfirmModal from "@/components/projects/ConfirmModal"
 import CategoryManager from "@/components/categories/CategoryManager"
+import CRMManager from "@/components/crm/CRMManager"
 import Toast, { type ToastType } from "@/components/ui/Toast"
 import ErrorBoundary from "@/components/ErrorBoundary"
 import { PlusCircle, RefreshCw, Sun, Moon, Columns } from "lucide-react"
 
 
 export default function Home() {
-  const [projects, setProjects] = useState<Project[]>([])
+  const [projects, setProjects]   = useState<Project[]>([])
   const [categories, setCategories] = useState<Category[]>([])
+  const [clients, setClients]     = useState<Client[]>([])
   const [stats, setStats] = useState<DashboardStats>({ total: 0, onProgress: 0, revisi: 0, done: 0, cancel: 0, totalIncome: 0, pipelineIncome: 0 })
   const [activeTab, setActiveTab] = useState<Tab>("dashboard")
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -65,9 +68,10 @@ export default function Home() {
   const loadData = useCallback(async (showLoader = false) => {
     if (showLoader) setLoading(true)
     try {
-      const [p, c] = await Promise.all([getProjects(), getCategories()])
+      const [p, c, cl] = await Promise.all([getProjects(), getCategories(), getClients()])
       setProjects(p)
       setCategories(c)
+      setClients(cl)
       setStats(computeStats(p))
       setLastSync(new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" }))
     } catch (err) {
@@ -79,20 +83,37 @@ export default function Home() {
 
   useEffect(() => { loadData(true) }, [loadData])
 
+  // Ref untuk track apakah modal sedang terbuka — dibaca di dalam interval
+  // tanpa perlu deps array berubah ukuran (fix: Rules of Hooks)
+  const modalOpenRef = useRef(false)
+  modalOpenRef.current = isModalOpen || isConfirmOpen
+
   useEffect(() => {
-    intervalRef.current = setInterval(() => loadData(), 15000)
+    const INTERVAL_MS = 20000
+
+    intervalRef.current = setInterval(() => {
+      // Baca dari ref — tidak perlu tambah deps
+      if (modalOpenRef.current) return
+      loadData()
+    }, INTERVAL_MS)
 
     const onVisibility = () => {
       if (document.hidden) {
         if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null }
       } else {
-        if (!intervalRef.current) { loadData(); intervalRef.current = setInterval(() => loadData(), 15000) }
+        if (!modalOpenRef.current) loadData()
+        if (!intervalRef.current) {
+          intervalRef.current = setInterval(() => {
+            if (modalOpenRef.current) return
+            loadData()
+          }, INTERVAL_MS)
+        }
       }
     }
     document.addEventListener("visibilitychange", onVisibility)
 
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current)
+      if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null }
       document.removeEventListener("visibilitychange", onVisibility)
     }
   }, [loadData])
@@ -176,6 +197,7 @@ export default function Home() {
               )}
               {activeTab === "dashboard" && <>Beranda <span className="font-serif italic font-normal text-neutral-400 dark:text-neutral-500">Desk</span></>}
               {activeTab === "projects" && <>Proyek <span className="font-serif italic font-normal text-neutral-400 dark:text-neutral-500">Desain</span></>}
+              {activeTab === "crm" && <>Klien <span className="font-serif italic font-normal text-neutral-400 dark:text-neutral-500">CRM</span></>}
               {activeTab === "analytics" && <>Laporan <span className="font-serif italic font-normal text-neutral-400 dark:text-neutral-500">Keuangan</span></>}
               {activeTab === "categories" && <>Kategori <span className="font-serif italic font-normal text-neutral-400 dark:text-neutral-500">Layanan</span></>}
             </h1>
@@ -185,9 +207,7 @@ export default function Home() {
             <button onClick={() => setDarkMode(!darkMode)} className="p-2 text-neutral-400 hover:text-neutral-950 dark:hover:text-white rounded-lg transition-all cursor-pointer bg-neutral-100/10 hover:bg-neutral-100/30 dark:bg-neutral-900/10 dark:hover:bg-neutral-900/30">
               {darkMode ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-neutral-500" />}
             </button>
-            <button onClick={() => loadData()} className="px-3 py-1.5 text-neutral-400 hover:text-neutral-950 dark:hover:text-white rounded-lg transition-all text-xs font-semibold flex items-center gap-1.5 cursor-pointer hover:bg-neutral-100/30 dark:hover:bg-neutral-900/30">
-              <RefreshCw className="w-3 h-3" />Refresh
-            </button>
+
             <button onClick={() => { setProjectToEdit(null); setIsModalOpen(true) }} className="px-4 py-1.5 bg-neutral-950 dark:bg-neutral-100 hover:bg-neutral-850 dark:hover:bg-white text-white dark:text-neutral-950 font-medium rounded-full text-xs flex items-center gap-2 transition-all cursor-pointer shadow-xs active:scale-[0.98]">
               <PlusCircle className="w-3.5 h-3.5" />Baru
             </button>
@@ -226,6 +246,8 @@ export default function Home() {
           )}
 
           {activeTab === "analytics" && <AnalyticsSection projects={projects} darkMode={darkMode} />}
+
+          {activeTab === "crm" && <CRMManager clients={clients} onChange={loadData} />}
 
           {activeTab === "categories" && <CategoryManager categories={categories} onChange={loadData} />}
         </div>

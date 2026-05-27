@@ -5,7 +5,7 @@ import type { Project, Category, ProjectStatus, Filters } from "@/types"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import {
   Search, Calendar, Eye, Edit2, Trash2, RotateCcw, ArrowUpDown,
-  FileSpreadsheet, Layers, CheckCircle2, XOctagon
+  FileSpreadsheet, Layers, CheckCircle2, XOctagon, Link as LinkIcon
 } from "lucide-react"
 import { renderIcon } from "@/lib/icons"
 import InvoiceModal from "./InvoiceModal"
@@ -169,19 +169,22 @@ export default function ProjectList({ projects, categories, onEdit, onDelete, on
                       </td>
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-4">
-                          {p.previewImage ? (
-                            <img src={p.previewImage} alt="" className="w-10 h-10 rounded object-cover bg-[#f5f5f7] dark:bg-neutral-900 border border-neutral-150 dark:border-neutral-850" />
-                          ) : (
-                            <div className="w-10 h-10 rounded bg-[#f5f5f7] dark:bg-neutral-900 border border-neutral-150 dark:border-neutral-850 flex items-center justify-center text-neutral-400 shrink-0">{getCatIcon(p.categoryId)}</div>
-                          )}
+                          <div className="w-10 h-10 rounded bg-[#f5f5f7] dark:bg-neutral-900 border border-neutral-150 dark:border-neutral-850 flex items-center justify-center text-neutral-400 shrink-0">{getCatIcon(p.categoryId)}</div>
                           <div className="max-w-xs overflow-hidden">
                             <span className="text-[9px] font-semibold text-neutral-400 dark:text-neutral-500 block uppercase tracking-[0.12em]">{p.clientName}</span>
                             <span className="text-xs font-semibold text-neutral-850 dark:text-neutral-200 block truncate">{p.projectTitle}</span>
-                            {p.notes && (
-                              <button onClick={() => setExpandedNotesId(expandedNotesId === p.id ? null : p.id)} className="mt-1 text-[10px] text-neutral-450 dark:text-neutral-500 hover:text-neutral-950 dark:hover:text-neutral-200 flex items-center gap-1 cursor-pointer">
-                                <Eye className="w-3 h-3" />{expandedNotesId === p.id ? "Sembunyikan" : "Catatan"}
-                              </button>
-                            )}
+                            <div className="flex items-center gap-2 mt-1">
+                              {p.notes && (
+                                <button onClick={() => setExpandedNotesId(expandedNotesId === p.id ? null : p.id)} className="text-[10px] text-neutral-450 dark:text-neutral-500 hover:text-neutral-950 dark:hover:text-neutral-200 flex items-center gap-1 cursor-pointer">
+                                  <Eye className="w-3 h-3" />{expandedNotesId === p.id ? "Sembunyikan" : "Catatan"}
+                                </button>
+                              )}
+                              {p.referenceLink && (
+                                <a href={p.referenceLink} target="_blank" rel="noopener noreferrer" className="text-[10px] text-neutral-450 dark:text-neutral-500 hover:text-blue-500 flex items-center gap-1 cursor-pointer ml-1">
+                                  <LinkIcon className="w-3 h-3" /> Link Referensi
+                                </a>
+                              )}
+                            </div>
                             {expandedNotesId === p.id && <p className="mt-2 text-[11px] text-neutral-600 dark:text-neutral-350 bg-neutral-50/50 dark:bg-neutral-900 border border-neutral-150 dark:border-neutral-850 rounded p-3 max-w-sm leading-relaxed">{p.notes}</p>}
                           </div>
                         </div>
@@ -233,9 +236,11 @@ export default function ProjectList({ projects, categories, onEdit, onDelete, on
                   </div>
                   <span className="text-xs font-semibold font-mono text-neutral-900 dark:text-white bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 px-2.5 py-0.5 rounded shrink-0">{formatCurrency(p.price)}</span>
                 </div>
-                {p.previewImage && (
-                  <div className="border border-neutral-100 dark:border-neutral-900 bg-[#f5f5f7]/30 dark:bg-[#121214]/10 rounded overflow-hidden h-28 flex items-center justify-center p-2.5">
-                    <img src={p.previewImage} alt="" className="max-h-24 w-auto object-contain rounded bg-white dark:bg-neutral-900 shadow-xs" />
+                {p.referenceLink && (
+                  <div className="flex items-center gap-2">
+                    <a href={p.referenceLink} target="_blank" rel="noopener noreferrer" className="text-[10px] font-medium text-blue-500 hover:text-blue-600 flex items-center gap-1">
+                      <LinkIcon className="w-3.5 h-3.5" /> Lihat Link Referensi
+                    </a>
                   </div>
                 )}
                 <div className="flex items-center gap-1.5 flex-wrap text-[10px]">
@@ -270,7 +275,7 @@ export default function ProjectList({ projects, categories, onEdit, onDelete, on
       )}
 
       {selectedIds.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[90] w-[calc(100%-2rem)] max-w-lg bg-neutral-950 dark:bg-neutral-100 text-white dark:text-neutral-950 rounded-xl p-4 shadow-2xl flex items-center justify-between gap-4 animate-slide-up">
+        <div className="fixed bottom-6 left-0 right-0 mx-auto z-[90] w-[calc(100%-2rem)] max-w-md bg-neutral-950 dark:bg-neutral-100 text-white dark:text-neutral-950 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between gap-4 animate-slide-up" style={{ marginLeft: "auto", marginRight: "auto" }}>
           <div className="flex items-center gap-3">
             <div className="p-2 bg-neutral-800 dark:bg-neutral-200 text-white dark:text-neutral-950 rounded-lg"><FileSpreadsheet className="w-4 h-4 text-emerald-400 dark:text-emerald-600" /></div>
             <div className="flex flex-col">

@@ -7,7 +7,7 @@ import type { Project, Category, ProjectFormData, ProjectStatus } from "@/types"
 type PrismaProjectWithCategory = {
   id: string; clientName: string; projectTitle: string; categoryId: string
   price: number; status: string; deadline: Date; notes: string
-  previewImage: string | null; createdAt: Date; updatedAt: Date
+  referenceLink: string | null; createdAt: Date; updatedAt: Date
   category: { id: string; name: string; iconName: string }
 }
 
@@ -22,7 +22,7 @@ function mapProject(p: PrismaProjectWithCategory): Project {
     status: p.status as ProjectStatus,
     deadline: p.deadline,
     notes: p.notes,
-    previewImage: p.previewImage,
+    referenceLink: p.referenceLink,
     createdAt: p.createdAt,
     updatedAt: p.updatedAt,
   }
@@ -59,7 +59,7 @@ export async function createProject(data: ProjectFormData): Promise<Project> {
       status: data.status,
       deadline: new Date(data.deadline),
       notes: data.notes?.trim() || "",
-      previewImage: data.previewImage || null,
+      referenceLink: data.referenceLink || null,
     },
     include: { category: true },
   })
@@ -81,7 +81,7 @@ export async function updateProject(id: string, data: ProjectFormData): Promise<
       status: data.status,
       deadline: new Date(data.deadline),
       notes: data.notes?.trim() || "",
-      previewImage: data.previewImage || null,
+      referenceLink: data.referenceLink || null,
     },
     include: { category: true },
   })
