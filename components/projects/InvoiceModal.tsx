@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback, useDeferredValue, memo } from "react"
 import type { Project, Category } from "@/types"
 import { X, Printer, Loader2, Edit3, Plus, Minus, Eye, ZoomIn, ZoomOut, Maximize2, Building2, ChevronDown, Upload } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
@@ -112,7 +112,7 @@ export default function InvoiceModal({ isOpen, onClose, selectedProjects, catego
   useEffect(() => {
     if (!isOpen || selectedProjects.length === 0) return
     const unique = Array.from(new Set(selectedProjects.map(p => p.clientName)))
-    setClientName(unique.length === 1 ? unique[0] : unique.join(", "))
+    setClientName(unique.length === 1 ? unique[0] : unique.length > 3 ? `${unique.slice(0, 3).join(", ")} dan ${unique.length - 3} klien lainnya` : unique.join(", "))
     const now = new Date()
     const pad = (n: number) => String(n).padStart(2, "0")
     const ymd = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
@@ -160,13 +160,67 @@ export default function InvoiceModal({ isOpen, onClose, selectedProjects, catego
   const zoomReset   = () => setZoomLevel(1)
   const totalScale  = scale * zoomLevel
 
-  if (!isOpen || selectedProjects.length === 0) return null
-
   const subtotal    = selectedProjects.reduce((a, p) => a + p.price, 0)
   const taxAmount   = (subtotal * taxPercent) / 100
   const totalAmount = subtotal + taxAmount - discountAmount
 
-  const getCatName = (id: string) => categories.find(c => c.id === id)?.name ?? id
+  const getPages = () => {
+    let remaining = [...selectedProjects];
+    const pagesList: any[][] = [];
+    let pIdx = 0;
+
+    while (remaining.length > 0) {
+      const isFirst = pIdx === 0;
+      // Adjusted limits for safety. A4 vertical space is finite.
+      const limitNoSum = isFirst ? 9 : 14;
+      const limitWithSum = isFirst ? 4 : 8;
+
+      if (remaining.length <= limitWithSum) {
+        pagesList.push(remaining);
+        remaining = [];
+      } else {
+        pagesList.push(remaining.slice(0, limitNoSum));
+        remaining = remaining.slice(limitNoSum);
+      }
+      pIdx++;
+    }
+
+    const lastPageItems = pagesList[pagesList.length - 1] || [];
+    const isFirstNow = pagesList.length === 1;
+    const limitWithSumForLast = isFirstNow ? 4 : 8;
+
+    if (lastPageItems.length > limitWithSumForLast) {
+      pagesList.push([]); // Add an empty page purely for the summary
+    }
+
+    if (pagesList.length === 0) pagesList.push([]);
+    return pagesList;
+  }
+
+  const pagesData = getPages();
+  const numPages = pagesData.length;
+  const invoiceContentHeight = numPages * A4_H_PX + (numPages - 1) * 20;
+
+  const deferredInvoiceData = useDeferredValue({
+    isPaid,
+    studio,
+    invoiceNo,
+    issueDate,
+    dueDate,
+    clientName,
+    clientContact,
+    clientAddress,
+    selectedProjects,
+    categories,
+    subtotal,
+    taxPercent,
+    taxAmount,
+    discountAmount,
+    totalAmount,
+    pagesData,
+  })
+
+  if (!isOpen || selectedProjects.length === 0) return null
 
   // ── PDF: capture the HIDDEN full-size clone ──
   const handlePrint = async () => {
@@ -180,6 +234,17 @@ export default function InvoiceModal({ isOpen, onClose, selectedProjects, catego
       const el = hiddenRef.current
       if (!el) { setIsGeneratingPdf(false); return }
 
+      const contentWrapper = el.querySelector("div")
+      if (contentWrapper) {
+        contentWrapper.style.gap = "0px"
+      }
+
+      const pageNodes = el.querySelectorAll(".invoice-pdf-page")
+      if (pageNodes.length === 0) { setIsGeneratingPdf(false); return }
+
+      // Temporary remove box-shadow for crisp PDF edges
+      pageNodes.forEach((node: any) => { node.style.boxShadow = "none" })
+
       const canvas = await html2canvas(el, {
         scale: 3,
         useCORS: true,
@@ -190,6 +255,12 @@ export default function InvoiceModal({ isOpen, onClose, selectedProjects, catego
         windowWidth: A4_W_PX,
       })
       setProgress(75)
+
+      // Restore styling
+      if (contentWrapper) {
+        contentWrapper.style.gap = "20px"
+      }
+      pageNodes.forEach((node: any) => { node.style.boxShadow = "0 4px 40px rgba(0,0,0,0.18)" })
 
       const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: [A4_W_PX, A4_H_PX] })
       const pdfW = A4_W_PX
@@ -218,163 +289,7 @@ export default function InvoiceModal({ isOpen, onClose, selectedProjects, catego
   }
 
   // ── Shared invoice content (rendered in both visible + hidden) ──
-  const InvoiceContent = () => (
-    <div
-      style={{
-        width: "100%",
-        minHeight: `${A4_H_PX}px`,
-        padding: "64px 60px 48px",
-        fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
-        fontSize: "12px",
-        lineHeight: 1.6,
-        color: "#111",
-        background: "#fff",
-        boxSizing: "border-box",
-        position: "relative",
-      }}
-    >
-      {/* ── CAP PAID ── */}
-      {isPaid && (
-        <div style={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%) rotate(-32deg)",
-          border: "6px solid #16a34a",
-          borderRadius: 8,
-          padding: "10px 28px",
-          color: "#16a34a",
-          fontSize: 52,
-          fontWeight: 900,
-          letterSpacing: 10,
-          textTransform: "uppercase",
-          opacity: 0.18,
-          pointerEvents: "none",
-          userSelect: "none",
-          whiteSpace: "nowrap",
-          zIndex: 10,
-          fontFamily: "'Arial Black', Arial, sans-serif",
-        }}>
-          PAID
-        </div>
-      )}
-      {/* Top bar */}
-      <div style={{ height: 4, background: "linear-gradient(90deg,#1a1a2e,#0f3460)", borderRadius: 2, marginBottom: 28 }} />
-
-      {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 28 }}>
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-            {/* Logo */}
-            {studio.logo ? (
-              <img src={studio.logo} alt="logo" style={{ width: 38, height: 38, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
-            ) : (
-              <div style={{ width: 38, height: 38, background: "#1a1a2e", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 8, fontSize: 13, fontWeight: 800, letterSpacing: 2, fontStyle: "italic", flexShrink: 0 }}>
-                {studio.name.substring(0, 2).toUpperCase()}
-              </div>
-            )}
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: 1, textTransform: "uppercase" }}>{studio.name}</div>
-              {studio.tagline && <div style={{ fontSize: 10, color: "#999" }}>{studio.tagline}</div>}
-            </div>
-          </div>
-          <div style={{ fontSize: 10, color: "#aaa", lineHeight: 1.7 }}>
-            {studio.address && <div>{studio.address}</div>}
-            {studio.contact && <div>{studio.contact}</div>}
-          </div>
-        </div>
-        <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: 30, fontWeight: 900, letterSpacing: 5, color: "#1a1a2e", lineHeight: 1 }}>INVOICE</div>
-          <div style={{ fontSize: 10, color: "#bbb", marginTop: 8 }}>
-            No: <span style={{ fontWeight: 700, color: "#555", fontFamily: "monospace" }}>{invoiceNo}</span>
-          </div>
-        </div>
-      </div>
-
-      <div style={{ height: 1, background: "#eee", marginBottom: 24 }} />
-
-      {/* Bill to / Dates */}
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 32 }}>
-        <div style={{ maxWidth: "55%" }}>
-          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: "#bbb", marginBottom: 8 }}>Ditagihkan Kepada</div>
-          <div style={{ fontSize: 14, fontWeight: 800, color: "#1a1a2e", marginBottom: 3 }}>{clientName || "—"}</div>
-          {clientContact && <div style={{ fontSize: 10, color: "#888" }}>{clientContact}</div>}
-          {clientAddress && <div style={{ fontSize: 10, color: "#999", marginTop: 3 }}>{clientAddress}</div>}
-        </div>
-        <div style={{ textAlign: "right", fontSize: 10 }}>
-          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: "#bbb", marginBottom: 8 }}>Tanggal</div>
-          <div style={{ color: "#777", marginBottom: 3 }}>Terbit: <span style={{ fontWeight: 700, color: "#444", fontFamily: "monospace" }}>{issueDate}</span></div>
-          <div style={{ color: "#777" }}>Jatuh Tempo: <span style={{ fontWeight: 700, color: "#444", fontFamily: "monospace" }}>{dueDate}</span></div>
-        </div>
-      </div>
-
-      {/* Table */}
-      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11, marginBottom: 28 }}>
-        <thead>
-          <tr style={{ borderBottom: "2.5px solid #1a1a2e" }}>
-            <th style={{ padding: "9px 12px", textAlign: "left", width: 36, fontSize: 9, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: "#aaa" }}>No</th>
-            <th style={{ padding: "9px 12px", textAlign: "left", fontSize: 9, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: "#aaa" }}>Proyek</th>
-            <th style={{ padding: "9px 12px", textAlign: "left", fontSize: 9, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: "#aaa" }}>Kategori</th>
-            <th style={{ padding: "9px 12px", textAlign: "right", width: 130, fontSize: 9, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: "#aaa" }}>Harga</th>
-          </tr>
-        </thead>
-        <tbody>
-          {selectedProjects.map((p, i) => (
-            <tr key={p.id} style={{ borderBottom: "1px solid #f0f0f0" }}>
-              <td style={{ padding: "12px 12px", fontFamily: "monospace", color: "#ccc", fontSize: 10 }}>{String(i + 1).padStart(2, "0")}</td>
-              <td style={{ padding: "12px 12px" }}>
-                <div style={{ fontWeight: 700, fontSize: 12, color: "#1a1a2e" }}>{p.projectTitle}</div>
-                <div style={{ fontSize: 9, color: "#bbb", marginTop: 1 }}>{p.clientName}</div>
-              </td>
-              <td style={{ padding: "12px 12px", color: "#999", fontSize: 10 }}>{getCatName(p.categoryId)}</td>
-              <td style={{ padding: "12px 12px", textAlign: "right", fontFamily: "monospace", fontWeight: 700, fontSize: 11 }}>{formatCurrency(p.price)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* Totals */}
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 36 }}>
-        <div style={{ width: 240 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", fontSize: 10, color: "#999" }}>
-            <span>Subtotal</span>
-            <span style={{ fontFamily: "monospace" }}>{formatCurrency(subtotal)}</span>
-          </div>
-          {taxPercent > 0 && (
-            <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", fontSize: 10, color: "#2e7d32" }}>
-              <span>Pajak ({taxPercent}%)</span>
-              <span style={{ fontFamily: "monospace" }}>+{formatCurrency(taxAmount)}</span>
-            </div>
-          )}
-          {discountAmount > 0 && (
-            <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", fontSize: 10, color: "#c62828" }}>
-              <span>Diskon</span>
-              <span style={{ fontFamily: "monospace" }}>-{formatCurrency(discountAmount)}</span>
-            </div>
-          )}
-          <div style={{ borderTop: "2.5px solid #1a1a2e", margin: "8px 0 6px" }} />
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, fontWeight: 900, color: "#1a1a2e" }}>
-            <span>Total Tagihan</span>
-            <span style={{ fontFamily: "monospace" }}>{formatCurrency(totalAmount)}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Bank */}
-      <div style={{ border: "1px solid #eee", background: "#fafafa", borderRadius: 8, padding: "14px 16px", display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
-        <div style={{ width: 32, height: 32, background: "#1a1a2e", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 6, fontSize: 14, flexShrink: 0 }}>⬢</div>
-        <div>
-          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: "#bbb", marginBottom: 3 }}>Rekening Pembayaran</div>
-          <div style={{ fontSize: 11, fontFamily: "monospace", fontWeight: 700, color: "#555" }}>{studio.bankInfo || "—"}</div>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div style={{ textAlign: "center", fontSize: 10, color: "#ccc", fontStyle: "italic", borderTop: "1px solid #f0f0f0", paddingTop: 18 }}>
-        Terima kasih atas kepercayaan Anda. Harap selesaikan pembayaran sebelum tanggal jatuh tempo.
-      </div>
-    </div>
-  )
+  const InvoiceContent = () => <MemoizedInvoiceContent data={deferredInvoiceData} />
 
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 backdrop-blur-sm p-0 md:p-4">
@@ -650,7 +565,7 @@ export default function InvoiceModal({ isOpen, onClose, selectedProjects, catego
             <div
               style={{
                 width: A4_W_PX * totalScale,
-                height: A4_H_PX * totalScale,
+                height: invoiceContentHeight * totalScale,
                 flexShrink: 0,
                 position: "relative",
                 marginBottom: 60, // ruang untuk toolbar zoom
@@ -660,11 +575,9 @@ export default function InvoiceModal({ isOpen, onClose, selectedProjects, catego
                 ref={sheetRef}
                 style={{
                   width: A4_W_PX,
-                  height: A4_H_PX,
+                  height: invoiceContentHeight,
                   transformOrigin: "top left",
                   transform: `scale(${totalScale})`,
-                  boxShadow: "0 4px 40px rgba(0,0,0,0.18)",
-                  overflow: "hidden",
                 }}
               >
                 <InvoiceContent />
@@ -753,3 +666,230 @@ function Row({ label, value, colored }: { label: string; value: string; colored?
     </div>
   )
 }
+
+const MemoizedInvoiceContent = memo(function MemoizedInvoiceContent({ data }: { data: any }) {
+  const { isPaid, studio, invoiceNo, issueDate, dueDate, clientName, clientContact, clientAddress, selectedProjects, categories, subtotal, taxPercent, taxAmount, discountAmount, totalAmount, pagesData } = data;
+  const getCatName = (id: string) => categories.find((c: any) => c.id === id)?.name ?? id;
+
+  const getAbsoluteIndex = (pIdx: number, iIdx: number) => {
+    let count = 0;
+    for (let k = 0; k < pIdx; k++) count += pagesData[k].length;
+    return count + iIdx;
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px", alignItems: "center", width: "100%" }}>
+      {pagesData.map((pageItems: any[], pageIndex: number) => {
+        const isLastPage = pageIndex === pagesData.length - 1;
+        const isFirstPage = pageIndex === 0;
+        
+        return (
+          <div
+            key={pageIndex}
+            className="invoice-pdf-page"
+            style={{
+              width: `${A4_W_PX}px`,
+              height: `${A4_H_PX}px`,
+              padding: "64px 60px 48px",
+              fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+              fontSize: "12px",
+              lineHeight: 1.6,
+              color: "#111",
+              background: "#fff",
+              boxShadow: "0 4px 40px rgba(0,0,0,0.18)",
+              boxSizing: "border-box",
+              position: "relative",
+              overflow: "hidden"
+            }}
+          >
+            {/* ── CAP PAID ── */}
+            {isPaid && (
+              <div style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%) rotate(-32deg)",
+                border: "6px solid #16a34a",
+                borderRadius: 8,
+                padding: "10px 28px",
+                color: "#16a34a",
+                fontSize: 52,
+                fontWeight: 900,
+                letterSpacing: 10,
+                textTransform: "uppercase",
+                opacity: 0.18,
+                pointerEvents: "none",
+                userSelect: "none",
+                whiteSpace: "nowrap",
+                zIndex: 10,
+                fontFamily: "'Arial Black', Arial, sans-serif",
+              }}>
+                PAID
+              </div>
+            )}
+            
+            {isFirstPage ? (
+              <>
+                {/* Full Header */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 40, borderBottom: "1px solid #E5E7EB", paddingBottom: 32 }}>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                      {/* Logo */}
+                      {studio.logo ? (
+                        <img src={studio.logo} alt="logo" style={{ width: 44, height: 44, borderRadius: 10, objectFit: "cover", flexShrink: 0, border: "1px solid #E5E7EB" }} />
+                      ) : (
+                        <div style={{ width: 44, height: 44, background: "#111827", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 10, fontSize: 14, fontWeight: 700, letterSpacing: 1, flexShrink: 0 }}>
+                          {studio.name.substring(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <div style={{ fontSize: 18, fontWeight: 700, color: "#111827", letterSpacing: "-0.02em" }}>{studio.name}</div>
+                        {studio.tagline && <div style={{ fontSize: 11, color: "#6B7280", marginTop: 2 }}>{studio.tagline}</div>}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 10, color: "#6B7280", lineHeight: 1.6, maxWidth: 250 }}>
+                      {studio.address && <div>{studio.address}</div>}
+                      {studio.contact && <div style={{ marginTop: 2 }}>{studio.contact}</div>}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: "0.08em", color: "#111827", lineHeight: 1, marginBottom: 16 }}>INVOICE</div>
+                    <div style={{ fontSize: 10, color: "#6B7280", display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
+                      <div style={{ display: "flex", gap: 16 }}>
+                        <span style={{ textTransform: "uppercase", fontSize: 9, letterSpacing: "0.05em", color: "#9CA3AF" }}>Nomor</span>
+                        <span style={{ fontWeight: 600, color: "#111827", minWidth: 90 }}>{invoiceNo}</span>
+                      </div>
+                      <div style={{ display: "flex", gap: 16 }}>
+                        <span style={{ textTransform: "uppercase", fontSize: 9, letterSpacing: "0.05em", color: "#9CA3AF" }}>Tanggal Terbit</span>
+                        <span style={{ fontWeight: 600, color: "#111827", minWidth: 90 }}>{issueDate}</span>
+                      </div>
+                      <div style={{ display: "flex", gap: 16 }}>
+                        <span style={{ textTransform: "uppercase", fontSize: 9, letterSpacing: "0.05em", color: "#9CA3AF" }}>Jatuh Tempo</span>
+                        <span style={{ fontWeight: 600, color: "#111827", minWidth: 90 }}>{dueDate}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bill to */}
+                <div style={{ marginBottom: 40 }}>
+                  <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", color: "#9CA3AF", marginBottom: 8 }}>Ditagihkan Kepada</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#111827", lineHeight: 1.5, maxWidth: "60%" }}>
+                    {clientName || "—"}
+                  </div>
+                  {clientContact && <div style={{ fontSize: 11, color: "#4B5563", marginTop: 4 }}>{clientContact}</div>}
+                  {clientAddress && <div style={{ fontSize: 11, color: "#6B7280", marginTop: 4, maxWidth: "50%", lineHeight: 1.5 }}>{clientAddress}</div>}
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Mini Header for subsequent pages */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32, borderBottom: "1px solid #E5E7EB", paddingBottom: 24 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    {studio.logo ? (
+                      <img src={studio.logo} alt="logo" style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover", flexShrink: 0, border: "1px solid #E5E7EB" }} />
+                    ) : (
+                      <div style={{ width: 32, height: 32, background: "#111827", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 8, fontSize: 11, fontWeight: 700, letterSpacing: 1, flexShrink: 0 }}>
+                        {studio.name.substring(0, 2).toUpperCase()}
+                      </div>
+                    )}
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#111827", letterSpacing: "-0.01em" }}>{studio.name}</div>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontSize: 16, fontWeight: 700, letterSpacing: "0.08em", color: "#111827" }}>INVOICE</div>
+                    <div style={{ fontSize: 9, color: "#6B7280", marginTop: 4 }}>Nomor: <span style={{ fontWeight: 600, color: "#111827" }}>{invoiceNo}</span></div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Table */}
+            {pageItems.length > 0 && (
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11, marginBottom: 28 }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid #D1D5DB" }}>
+                    <th style={{ padding: "12px 4px", textAlign: "left", width: 32, fontSize: 9, fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", color: "#6B7280" }}>No</th>
+                    <th style={{ padding: "12px 12px", textAlign: "left", fontSize: 9, fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", color: "#6B7280" }}>Deskripsi</th>
+                    <th style={{ padding: "12px 12px", textAlign: "left", fontSize: 9, fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", color: "#6B7280" }}>Kategori</th>
+                    <th style={{ padding: "12px 4px", textAlign: "right", width: 120, fontSize: 9, fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", color: "#6B7280" }}>Jumlah</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pageItems.map((p: any, i: number) => {
+                    const absoluteIndex = getAbsoluteIndex(pageIndex, i);
+                    return (
+                      <tr key={p.id} style={{ borderBottom: "1px solid #F3F4F6" }}>
+                        <td style={{ padding: "16px 4px", color: "#9CA3AF", fontSize: 10, verticalAlign: "top" }}>{String(absoluteIndex + 1).padStart(2, "0")}</td>
+                        <td style={{ padding: "16px 12px", verticalAlign: "top" }}>
+                          <div style={{ fontWeight: 600, fontSize: 12, color: "#111827", letterSpacing: "-0.01em" }}>{p.projectTitle}</div>
+                          {p.clientName !== clientName && <div style={{ fontSize: 10, color: "#6B7280", marginTop: 4 }}>{p.clientName}</div>}
+                        </td>
+                        <td style={{ padding: "16px 12px", color: "#6B7280", fontSize: 11, verticalAlign: "top" }}>{getCatName(p.categoryId)}</td>
+                        <td style={{ padding: "16px 4px", textAlign: "right", fontWeight: 600, color: "#111827", fontSize: 11, verticalAlign: "top" }}>{formatCurrency(p.price)}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            )}
+
+            {isLastPage && (
+              <>
+                {/* Totals */}
+                <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 48 }}>
+                  <div style={{ width: 280 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 4px", fontSize: 11, color: "#4B5563" }}>
+                      <span>Subtotal</span>
+                      <span style={{ fontWeight: 500, color: "#111827" }}>{formatCurrency(subtotal)}</span>
+                    </div>
+                    {taxPercent > 0 && (
+                      <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 4px", fontSize: 11, color: "#4B5563" }}>
+                        <span>Pajak ({taxPercent}%)</span>
+                        <span style={{ fontWeight: 500, color: "#111827" }}>+{formatCurrency(taxAmount)}</span>
+                      </div>
+                    )}
+                    {discountAmount > 0 && (
+                      <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 4px", fontSize: 11, color: "#4B5563" }}>
+                        <span>Diskon</span>
+                        <span style={{ fontWeight: 500, color: "#111827" }}>-{formatCurrency(discountAmount)}</span>
+                      </div>
+                    )}
+                    <div style={{ borderTop: "1px solid #D1D5DB", margin: "8px 0" }} />
+                    <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 4px", fontSize: 16, fontWeight: 700, color: "#111827", letterSpacing: "-0.01em" }}>
+                      <span>Total</span>
+                      <span>{formatCurrency(totalAmount)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bank */}
+                <div style={{ marginBottom: 32 }}>
+                  <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", color: "#9CA3AF", marginBottom: 8 }}>Informasi Pembayaran</div>
+                  <div style={{ padding: "14px 16px", background: "#F9FAFB", borderRadius: 8, border: "1px solid #E5E7EB", width: "320px" }}>
+                    <div style={{ margin: 0, fontSize: 11, fontWeight: 600, color: "#111827", lineHeight: 1.6, fontFamily: "monospace", position: "relative", zIndex: 10 }}>
+                      {studio.bankInfo 
+                        ? studio.bankInfo.split('\n').map((line: string, i: number) => <div key={i} style={{ minHeight: "14px" }}>{line}</div>) 
+                        : "—"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div style={{ textAlign: "center", fontSize: 10, color: "#9CA3AF", borderTop: "1px solid #F3F4F6", paddingTop: 24 }}>
+                  Terima kasih atas kerja samanya. Harap lakukan pembayaran sebelum tanggal jatuh tempo.
+                </div>
+              </>
+            )}
+
+            {/* Page Number Indicator */}
+            {pagesData.length > 1 && (
+              <div style={{ position: "absolute", bottom: "32px", right: "60px", fontSize: "9px", color: "#ccc", fontFamily: "monospace", fontWeight: 700 }}>
+                Halaman {pageIndex + 1} dari {pagesData.length}
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+})

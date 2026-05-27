@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useDeferredValue } from "react"
 import type { Project, Category, ProjectStatus, Filters } from "@/types"
 import { formatCurrency, formatDate } from "@/lib/utils"
 import {
@@ -13,13 +13,13 @@ import InvoiceModal from "./InvoiceModal"
 function StatusBadge({ status }: { status: ProjectStatus }) {
   switch (status) {
     case "On Progress":
-      return <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-medium rounded bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border border-neutral-200/50 dark:border-neutral-800"><span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />Berjalan</span>
+      return <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold rounded bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-500/20"><span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />Berjalan</span>
     case "Revisi":
-      return <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-medium rounded bg-neutral-100 dark:bg-neutral-900 text-neutral-600 dark:text-neutral-450 border border-neutral-200/50 dark:border-neutral-800"><span className="w-1.5 h-1.5 rounded-full bg-amber-500" />Revisi</span>
+      return <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold rounded bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200/50 dark:border-amber-500/20"><span className="w-1.5 h-1.5 rounded-full bg-amber-500" />Revisi</span>
     case "Done":
-      return <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-medium rounded bg-emerald-500/10 text-[#0f5132] dark:text-[#a3cfbb] border border-emerald-500/20"><CheckCircle2 className="w-3 h-3 text-[#198754]" />Selesai</span>
+      return <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold rounded bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-500/20"><CheckCircle2 className="w-3.5 h-3.5" />Selesai</span>
     case "Cancel":
-      return <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-medium rounded bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"><XOctagon className="w-3 h-3 text-red-500" />Batal</span>
+      return <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold rounded bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200/50 dark:border-red-500/20"><XOctagon className="w-3.5 h-3.5" />Batal</span>
   }
 }
 
@@ -36,6 +36,8 @@ const STATUSES: ("All" | ProjectStatus)[] = ["All", "On Progress", "Revisi", "Do
 
 export default function ProjectList({ projects, categories, onEdit, onDelete, onStatusChange, isDashboard = false }: ProjectListProps) {
   const [filters, setFilters] = useState<Filters>({ search: "", status: "All", category: "All", sortBy: "createdAt_desc" })
+  const deferredFilters = useDeferredValue(filters)
+  
   const [expandedNotesId, setExpandedNotesId] = useState<string | null>(null)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false)
@@ -49,15 +51,15 @@ export default function ProjectList({ projects, categories, onEdit, onDelete, on
     ? [...projects].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5)
     : projects
         .filter((p) => {
-          const s = filters.search.toLowerCase()
+          const s = deferredFilters.search.toLowerCase()
           return (p.clientName.toLowerCase().includes(s) || p.projectTitle.toLowerCase().includes(s) || p.notes.toLowerCase().includes(s)) &&
-            (filters.status === "All" || p.status === filters.status) &&
-            (filters.category === "All" || p.categoryId === filters.category)
+            (deferredFilters.status === "All" || p.status === deferredFilters.status) &&
+            (deferredFilters.category === "All" || p.categoryId === deferredFilters.category)
         })
         .sort((a, b) => {
-          if (filters.sortBy === "createdAt_desc") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          if (filters.sortBy === "createdAt_asc") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          if (filters.sortBy === "price_desc") return b.price - a.price
+          if (deferredFilters.sortBy === "createdAt_desc") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          if (deferredFilters.sortBy === "createdAt_asc") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          if (deferredFilters.sortBy === "price_desc") return b.price - a.price
           return new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
         })
 
@@ -131,6 +133,12 @@ export default function ProjectList({ projects, categories, onEdit, onDelete, on
                 <button onClick={handleExportCSV} className="px-3 py-1.5 border border-neutral-200 dark:border-neutral-850/50 text-neutral-500 bg-white dark:bg-[#121214]/30 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer">
                   <FileSpreadsheet className="w-3.5 h-3.5" />CSV
                 </button>
+                {selectedIds.length > 0 && (
+                  <button onClick={() => setIsInvoiceOpen(true)} className="px-3.5 py-1.5 bg-neutral-950 dark:bg-white text-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-neutral-200 font-bold rounded-lg text-[11px] flex items-center gap-1.5 transition-all cursor-pointer shadow-sm animate-fade-in">
+                    <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-600" />
+                    Buat Invoice ({selectedIds.length})
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -148,72 +156,74 @@ export default function ProjectList({ projects, categories, onEdit, onDelete, on
       ) : (
         <>
           <div className="hidden md:block bg-white dark:bg-[#0d0d0f]/50 border border-neutral-200 dark:border-neutral-900/60 rounded-xl shadow-xs overflow-hidden animate-fade-in">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto max-h-[60vh] overflow-y-auto custom-scrollbar relative">
               <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-neutral-200 dark:border-neutral-900 text-[8.5px] uppercase font-semibold tracking-[0.2em] text-neutral-400 dark:text-neutral-500">
-                    <th className="py-4 px-5 w-12"><input type="checkbox" checked={selectedIds.length === filteredProjects.length && filteredProjects.length > 0} onChange={(e) => setSelectedIds(e.target.checked ? filteredProjects.map((p) => p.id) : [])} className="w-3.5 h-3.5 rounded border-neutral-300 cursor-pointer" /></th>
-                    <th className="py-4 px-6">Klien & Proyek</th>
-                    <th className="py-4 px-4 text-center">Kategori</th>
-                    <th className="py-4 px-4 text-center">Status</th>
-                    <th className="py-4 px-4 text-right">Nilai</th>
-                    <th className="py-4 px-4 text-center">Deadline</th>
-                    <th className="py-4 px-6 text-right">Aksi</th>
+                <thead className="sticky top-0 bg-white/95 dark:bg-[#0d0d0f]/95 backdrop-blur-md z-10 shadow-sm border-b border-neutral-100 dark:border-neutral-900/50">
+                  <tr className="text-[10px] uppercase font-bold tracking-wider text-neutral-400 dark:text-neutral-500">
+                    <th className="py-5 px-6 w-12"><input type="checkbox" checked={selectedIds.length === filteredProjects.length && filteredProjects.length > 0} onChange={(e) => setSelectedIds(e.target.checked ? filteredProjects.map((p) => p.id) : [])} className="w-4 h-4 rounded border-neutral-300 cursor-pointer accent-neutral-900 dark:accent-white" /></th>
+                    <th className="py-5 px-6">Klien & Proyek</th>
+                    <th className="py-5 px-4 text-center">Kategori</th>
+                    <th className="py-5 px-4 text-center">Status</th>
+                    <th className="py-5 px-4 text-right">Nilai</th>
+                    <th className="py-5 px-4 text-center">Deadline</th>
+                    <th className="py-5 px-6 text-right">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-200/50 dark:divide-neutral-900/30">
+                <tbody className="divide-y divide-neutral-100 dark:divide-neutral-900/40">
                   {filteredProjects.map((p) => (
-                    <tr key={p.id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-950/20 transition-colors text-xs">
-                      <td className="py-4 px-5 text-center">
-                        <input type="checkbox" checked={selectedIds.includes(p.id)} onChange={() => setSelectedIds((prev) => prev.includes(p.id) ? prev.filter((id) => id !== p.id) : [...prev, p.id])} className="w-3.5 h-3.5 rounded border-neutral-300 cursor-pointer" />
+                    <tr key={p.id} className="hover:bg-neutral-50/80 dark:hover:bg-[#121214]/50 transition-colors group">
+                      <td className="py-5 px-6 text-center">
+                        <input type="checkbox" checked={selectedIds.includes(p.id)} onChange={() => setSelectedIds((prev) => prev.includes(p.id) ? prev.filter((id) => id !== p.id) : [...prev, p.id])} className="w-4 h-4 rounded border-neutral-300 cursor-pointer accent-neutral-900 dark:accent-white opacity-40 group-hover:opacity-100 transition-opacity" />
                       </td>
-                      <td className="py-4 px-6">
+                      <td className="py-5 px-6">
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded bg-[#f5f5f7] dark:bg-neutral-900 border border-neutral-150 dark:border-neutral-850 flex items-center justify-center text-neutral-400 shrink-0">{getCatIcon(p.categoryId)}</div>
+                          <div className="w-11 h-11 rounded-xl bg-neutral-100/80 dark:bg-neutral-900/50 border border-neutral-200/50 dark:border-neutral-800/50 flex items-center justify-center text-neutral-400 shrink-0">{getCatIcon(p.categoryId)}</div>
                           <div className="max-w-xs overflow-hidden">
-                            <span className="text-[9px] font-semibold text-neutral-400 dark:text-neutral-500 block uppercase tracking-[0.12em]">{p.clientName}</span>
-                            <span className="text-xs font-semibold text-neutral-850 dark:text-neutral-200 block truncate">{p.projectTitle}</span>
-                            <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 block uppercase tracking-wider">{p.clientName}</span>
+                            <span className="text-[13px] font-semibold text-neutral-800 dark:text-neutral-200 block truncate mt-0.5">{p.projectTitle}</span>
+                            <div className="flex items-center gap-3 mt-1.5">
                               {p.notes && (
-                                <button onClick={() => setExpandedNotesId(expandedNotesId === p.id ? null : p.id)} className="text-[10px] text-neutral-450 dark:text-neutral-500 hover:text-neutral-950 dark:hover:text-neutral-200 flex items-center gap-1 cursor-pointer">
-                                  <Eye className="w-3 h-3" />{expandedNotesId === p.id ? "Sembunyikan" : "Catatan"}
+                                <button onClick={() => setExpandedNotesId(expandedNotesId === p.id ? null : p.id)} className="text-[11px] font-medium text-neutral-400 dark:text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200 flex items-center gap-1 cursor-pointer transition-colors">
+                                  <Eye className="w-3.5 h-3.5" />{expandedNotesId === p.id ? "Sembunyikan" : "Catatan"}
                                 </button>
                               )}
                               {p.referenceLink && (
-                                <a href={p.referenceLink} target="_blank" rel="noopener noreferrer" className="text-[10px] text-neutral-450 dark:text-neutral-500 hover:text-blue-500 flex items-center gap-1 cursor-pointer ml-1">
-                                  <LinkIcon className="w-3 h-3" /> Link Referensi
+                                <a href={p.referenceLink} target="_blank" rel="noopener noreferrer" className="text-[11px] font-medium text-neutral-400 dark:text-neutral-500 hover:text-blue-500 flex items-center gap-1 cursor-pointer transition-colors">
+                                  <LinkIcon className="w-3.5 h-3.5" /> Referensi
                                 </a>
                               )}
                             </div>
-                            {expandedNotesId === p.id && <p className="mt-2 text-[11px] text-neutral-600 dark:text-neutral-350 bg-neutral-50/50 dark:bg-neutral-900 border border-neutral-150 dark:border-neutral-850 rounded p-3 max-w-sm leading-relaxed">{p.notes}</p>}
+                            {expandedNotesId === p.id && <p className="mt-3 text-[12px] text-neutral-600 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-100 dark:border-neutral-800/50 rounded-lg p-3 max-w-sm leading-relaxed shadow-sm">{p.notes}</p>}
                           </div>
                         </div>
                       </td>
-                      <td className="py-4 px-4 text-center">
-                        <span className="inline-flex items-center gap-1.5 text-xs text-neutral-600 dark:text-neutral-400 font-medium">
+                      <td className="py-5 px-4 text-center">
+                        <span className="inline-flex items-center gap-1.5 text-[12px] text-neutral-500 dark:text-neutral-400 font-medium">
                           {getCatIcon(p.categoryId)}{getCatName(p.categoryId)}
                         </span>
                       </td>
-                      <td className="py-4 px-4 text-center">
-                        <select value={p.status} onChange={(e) => onStatusChange(p.id, e.target.value as ProjectStatus)}
-                          className="appearance-none bg-[#f5f5f7]/80 dark:bg-[#121214] border border-neutral-150 dark:border-neutral-850 rounded text-[10px] font-medium py-1 pl-3 pr-7 text-neutral-600 dark:text-neutral-400 focus:outline-none cursor-pointer">
-                          <option value="On Progress">Berjalan</option>
-                          <option value="Revisi">Revisi</option>
-                          <option value="Done">Selesai</option>
-                          <option value="Cancel">Batal</option>
-                        </select>
-                      </td>
-                      <td className="py-4 px-4 text-right font-mono text-neutral-900 dark:text-[#f5f5f7] font-semibold text-xs">{formatCurrency(p.price)}</td>
-                      <td className="py-4 px-4 text-center">
-                        <div className="space-y-0.5">
-                          <span className="text-neutral-850 dark:text-neutral-200 block text-xs font-semibold">{formatDate(p.deadline)}</span>
-                          <span className="text-[9px] text-neutral-400 dark:text-neutral-500 block">{formatDate(p.createdAt)}</span>
+                      <td className="py-5 px-4 text-center">
+                        <div className="relative inline-flex items-center justify-center group-hover:scale-105 transition-transform">
+                          <select value={p.status} onChange={(e) => onStatusChange(p.id, e.target.value as ProjectStatus)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <option value="On Progress">Berjalan</option>
+                            <option value="Revisi">Revisi</option>
+                            <option value="Done">Selesai</option>
+                            <option value="Cancel">Batal</option>
+                          </select>
+                          <StatusBadge status={p.status} />
                         </div>
                       </td>
-                      <td className="py-4 px-6 text-right">
-                        <div className="flex items-center justify-end gap-2.5">
-                          <button onClick={() => onEdit(p)} className="p-1 text-neutral-400 hover:text-neutral-900 dark:hover:text-white rounded transition-colors cursor-pointer" title="Edit"><Edit2 className="w-3.5 h-3.5" /></button>
-                          <button onClick={() => onDelete(p)} className="p-1 text-red-500 hover:text-red-700 rounded transition-colors cursor-pointer" title="Hapus"><Trash2 className="w-3.5 h-3.5" /></button>
+                      <td className="py-5 px-4 text-right font-mono text-neutral-800 dark:text-neutral-200 font-semibold text-[13px]">{formatCurrency(p.price)}</td>
+                      <td className="py-5 px-4 text-center">
+                        <div className="space-y-1">
+                          <span className="text-neutral-800 dark:text-neutral-200 block text-[12px] font-semibold">{formatDate(p.deadline)}</span>
+                          <span className="text-[10px] text-neutral-400 dark:text-neutral-500 block">Dibuat {formatDate(p.createdAt)}</span>
+                        </div>
+                      </td>
+                      <td className="py-5 px-6 text-right">
+                        <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => onEdit(p)} className="p-2 text-neutral-400 hover:text-neutral-800 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-all cursor-pointer" title="Edit"><Edit2 className="w-4 h-4" /></button>
+                          <button onClick={() => onDelete(p)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all cursor-pointer" title="Hapus"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       </td>
                     </tr>
@@ -274,23 +284,7 @@ export default function ProjectList({ projects, categories, onEdit, onDelete, on
         </>
       )}
 
-      {selectedIds.length > 0 && (
-        <div className="fixed bottom-6 left-0 right-0 mx-auto z-[90] w-[calc(100%-2rem)] max-w-md bg-neutral-950 dark:bg-neutral-100 text-white dark:text-neutral-950 rounded-2xl p-3.5 shadow-2xl flex items-center justify-between gap-4 animate-slide-up" style={{ marginLeft: "auto", marginRight: "auto" }}>
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-neutral-800 dark:bg-neutral-200 text-white dark:text-neutral-950 rounded-lg"><FileSpreadsheet className="w-4 h-4 text-emerald-400 dark:text-emerald-600" /></div>
-            <div className="flex flex-col">
-              <span className="text-xs font-bold">{selectedIds.length} Proyek Dipilih</span>
-              <span className="text-[10px] text-neutral-400 dark:text-neutral-550">Siap di-invoice.</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setSelectedIds([])} className="px-3 py-1.5 text-[10px] font-semibold text-neutral-450 hover:text-white dark:text-neutral-500 dark:hover:text-black hover:bg-white/10 dark:hover:bg-neutral-950/5 rounded-lg transition-colors cursor-pointer">Batal</button>
-            <button onClick={() => setIsInvoiceOpen(true)} className="px-3.5 py-1.5 bg-neutral-100 dark:bg-neutral-950 text-neutral-950 dark:text-white hover:bg-neutral-200 dark:hover:bg-neutral-900 font-bold rounded-lg text-[11px] flex items-center gap-1.5 transition-all cursor-pointer">
-              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-500" />Buat Invoice
-            </button>
-          </div>
-        </div>
-      )}
+
 
       <InvoiceModal isOpen={isInvoiceOpen} onClose={() => setIsInvoiceOpen(false)} selectedProjects={selectedProjects} categories={categories} />
     </div>
