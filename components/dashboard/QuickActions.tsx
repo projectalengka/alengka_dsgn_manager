@@ -1,6 +1,6 @@
 "use client"
 
-import { PlusCircle, UserPlus, FileSpreadsheet, Download } from "lucide-react"
+import { PlusCircle, UserPlus, Wallet, Tag } from "lucide-react"
 import type { Tab } from "@/types"
 
 interface QuickActionsProps {
@@ -11,16 +11,16 @@ interface QuickActionsProps {
 const actions = [
   { label: "Proyek Baru", icon: PlusCircle, action: "newProject", color: "text-[#7c5cfc] bg-[#7c5cfc]/10" },
   { label: "Tambah Klien", icon: UserPlus, action: "newClient", color: "text-blue-500 bg-blue-500/10" },
-  { label: "Laporan", icon: FileSpreadsheet, action: "report", color: "text-emerald-500 bg-emerald-500/10" },
-  { label: "Ekspor CSV", icon: Download, action: "export", color: "text-amber-500 bg-amber-500/10" },
+  { label: "Input Pemasukan", icon: Wallet, action: "keuangan", color: "text-emerald-500 bg-emerald-500/10" },
+  { label: "Kategori", icon: Tag, action: "categories", color: "text-amber-500 bg-amber-500/10" },
 ]
 
 export default function QuickActions({ onNewProject, onNavigate }: QuickActionsProps) {
   const handle = (action: string) => {
     if (action === "newProject") onNewProject()
     if (action === "newClient") onNavigate("crm" as Tab)
-    if (action === "report") onNavigate("analytics" as Tab)
-    if (action === "export") onNavigate("projects" as Tab)
+    if (action === "keuangan") onNavigate("keuangan" as Tab)
+    if (action === "categories") onNavigate("categories" as Tab)
   }
 
   return (
