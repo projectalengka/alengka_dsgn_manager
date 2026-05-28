@@ -169,16 +169,16 @@ export default function ProjectForm({ isOpen, onClose, onSave, projectToEdit, ca
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 overflow-y-auto">
-      <div className="absolute inset-0 bg-[#09090b]/40 dark:bg-black/60 backdrop-blur-md transition-opacity" onClick={onClose} />
-      <div className="relative bg-white dark:bg-[#0d0d0f] border border-neutral-200/70 dark:border-neutral-900 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl animate-fade-in transition-colors duration-500">
-        <div className="sticky top-0 bg-white/95 dark:bg-[#0d0d0f]/95 backdrop-blur-md px-8 py-5 border-b border-neutral-100 dark:border-neutral-900 flex items-center justify-between z-20">
+      <div className="absolute inset-0 bg-[#09090b]/40 dark:bg-[#0a0a12]/70 backdrop-blur-md transition-opacity" onClick={onClose} />
+      <div className="relative bg-white dark:bg-[#0f0f1a] border border-neutral-200/70 dark:border-[#1e1e30] rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl animate-fade-in transition-colors duration-500">
+        <div className="sticky top-0 bg-white/95 dark:bg-[#0f0f1a]/95 backdrop-blur-md px-8 py-5 border-b border-neutral-100 dark:border-[#1e1e30] flex items-center justify-between z-20">
           <div>
-            <h2 className="text-[10px] font-medium text-neutral-400 dark:text-neutral-550 uppercase tracking-[0.2em]">
+            <h2 className="text-[10px] font-medium text-neutral-400 dark:text-[#5a5a6e] uppercase tracking-[0.2em]">
               {projectToEdit ? "Edit Proyek" : "Tambah Proyek"}
             </h2>
-            <p className="text-xs text-neutral-450 dark:text-neutral-400 mt-0.5">Isi detail proyek yang mau dikerjain.</p>
+            <p className="text-xs text-neutral-450 dark:text-[#8b8b9e] mt-0.5">Isi detail proyek yang mau dikerjain.</p>
           </div>
-          <button onClick={onClose} className="p-1.5 hover:bg-neutral-50 dark:hover:bg-neutral-900 border border-neutral-150 dark:border-neutral-850 text-neutral-400 hover:text-neutral-800 dark:hover:text-white rounded-lg transition-all cursor-pointer">
+          <button onClick={onClose} className="p-1.5 hover:bg-neutral-50 dark:hover:bg-[#141422] border border-neutral-150 dark:border-[#232338] text-neutral-400 hover:text-neutral-800 dark:hover:text-white rounded-lg transition-all cursor-pointer">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -187,7 +187,7 @@ export default function ProjectForm({ isOpen, onClose, onSave, projectToEdit, ca
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Client search field */}
             <div className="space-y-1.5 relative">
-              <label className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-400 dark:text-neutral-500">
+              <label className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-400 dark:text-[#5a5a6e]">
                 Nama Klien *
               </label>
               <div className="relative">
@@ -201,7 +201,7 @@ export default function ProjectForm({ isOpen, onClose, onSave, projectToEdit, ca
                   onChange={e => handleClientInputChange(e.target.value)}
                   onFocus={handleClientFocus}
                   required
-                  className="w-full bg-[#f5f5f7] dark:bg-[#121214] border border-neutral-200/60 dark:border-neutral-850 rounded-lg text-xs pl-9 pr-4 py-2.5 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:border-neutral-350 dark:focus:border-neutral-700 transition-all"
+                  className="w-full bg-[#f5f5f7] dark:bg-[#141422] border border-neutral-200/60 dark:border-[#232338] rounded-lg text-xs pl-9 pr-4 py-2.5 text-neutral-800 dark:text-[#e4e4ed] placeholder-neutral-400 focus:outline-none focus:border-neutral-350 dark:focus:border-[#7c5cfc]/50 transition-all"
                 />
                 {searchLoading && <div className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 border-2 border-neutral-400 border-t-transparent rounded-full animate-spin" />}
               </div>
@@ -216,20 +216,20 @@ export default function ProjectForm({ isOpen, onClose, onSave, projectToEdit, ca
               )}
               {/* Suggestions dropdown */}
               {showSuggestions && (
-                <div ref={suggestionsRef} className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#0d0d0f] border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-xl z-50 overflow-hidden max-h-52 overflow-y-auto">
+                <div ref={suggestionsRef} className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#0f0f1a] border border-neutral-200 dark:border-[#2a2a44] rounded-xl shadow-xl z-50 overflow-hidden max-h-52 overflow-y-auto">
                   {clientSuggestions.map(c => (
                     <button
                       key={c.id}
                       type="button"
                       onMouseDown={() => selectClient(c)}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-colors text-left cursor-pointer"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-neutral-50 dark:hover:bg-[#141422] transition-colors text-left cursor-pointer"
                     >
                       <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[9px] font-bold text-white shrink-0"
                         style={{ background: `hsl(${c.name.split("").reduce((a,ch)=>a+ch.charCodeAt(0),0)%360}, 55%, 48%)` }}>
                         {c.name.split(" ").slice(0,2).map(w=>w[0]).join("").toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        <div className="text-xs font-semibold text-neutral-900 dark:text-white truncate">{c.name}</div>
+                        <div className="text-xs font-semibold text-neutral-900 dark:text-[#e4e4ed] truncate">{c.name}</div>
                         <div className="text-[9px] text-neutral-400 truncate">{c.company || c.phone || c.email}</div>
                       </div>
                       <span className="ml-auto text-[9px] text-neutral-400 shrink-0">{c._count?.projects ?? 0} proyek</span>
@@ -239,38 +239,38 @@ export default function ProjectForm({ isOpen, onClose, onSave, projectToEdit, ca
               )}
             </div>
             <div className="space-y-1.5">
-              <label htmlFor="project-title" className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-400 dark:text-neutral-500">Judul Proyek *</label>
-              <input id="project-title" type="text" placeholder="cth: Desain Logo" value={projectTitle} onChange={(e) => setProjectTitle(e.target.value)} required className="w-full bg-[#f5f5f7] dark:bg-[#121214] border border-neutral-200/60 dark:border-neutral-850 rounded-lg text-xs px-4 py-2.5 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:border-neutral-350 dark:focus:border-neutral-700 transition-all" />
+              <label htmlFor="project-title" className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-400 dark:text-[#5a5a6e]">Judul Proyek *</label>
+              <input id="project-title" type="text" placeholder="cth: Desain Logo" value={projectTitle} onChange={(e) => setProjectTitle(e.target.value)} required className="w-full bg-[#f5f5f7] dark:bg-[#141422] border border-neutral-200/60 dark:border-[#232338] rounded-lg text-xs px-4 py-2.5 text-neutral-800 dark:text-[#e4e4ed] placeholder-neutral-400 focus:outline-none focus:border-neutral-350 dark:focus:border-[#7c5cfc]/50 transition-all" />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <div className="space-y-1.5">
-              <label htmlFor="category-select" className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-400 dark:text-neutral-500">Kategori</label>
-              <select id="category-select" value={categoryId} onChange={handleCategoryChange} className="w-full bg-[#f5f5f7] dark:bg-[#121214] border border-neutral-200/60 dark:border-neutral-850 rounded-lg text-xs px-4 py-2.5 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-neutral-350 dark:focus:border-neutral-700 cursor-pointer transition-all">
+              <label htmlFor="category-select" className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-400 dark:text-[#5a5a6e]">Kategori</label>
+              <select id="category-select" value={categoryId} onChange={handleCategoryChange} className="w-full bg-[#f5f5f7] dark:bg-[#141422] border border-neutral-200/60 dark:border-[#232338] rounded-lg text-xs px-4 py-2.5 text-neutral-800 dark:text-[#e4e4ed] focus:outline-none focus:border-neutral-350 dark:focus:border-[#7c5cfc]/50 cursor-pointer transition-all">
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
               </select>
             </div>
             <div className="space-y-1.5">
-              <label htmlFor="project-price" className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-400 dark:text-neutral-500">Harga *</label>
+              <label htmlFor="project-price" className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-400 dark:text-[#5a5a6e]">Harga *</label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs text-neutral-400 font-mono font-medium">Rp</span>
-                <input id="project-price" type="number" min="0" placeholder="3000000" value={price} onChange={(e) => setPrice(e.target.value === "" ? "" : Number(e.target.value))} required className="w-full bg-[#f5f5f7] dark:bg-[#121214] border border-neutral-200/60 dark:border-neutral-850 rounded-lg text-xs pl-11 pr-4 py-2.5 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:border-neutral-350 dark:focus:border-neutral-700 font-mono transition-all" />
+                <input id="project-price" type="number" min="0" placeholder="3000000" value={price} onChange={(e) => setPrice(e.target.value === "" ? "" : Number(e.target.value))} required className="w-full bg-[#f5f5f7] dark:bg-[#141422] border border-neutral-200/60 dark:border-[#232338] rounded-lg text-xs pl-11 pr-4 py-2.5 text-neutral-800 dark:text-[#e4e4ed] placeholder-neutral-400 focus:outline-none focus:border-neutral-350 dark:focus:border-[#7c5cfc]/50 font-mono transition-all" />
               </div>
             </div>
             <div className="space-y-1.5">
-              <label htmlFor="project-deadline" className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-400 dark:text-neutral-500">Deadline *</label>
-              <input id="project-deadline" type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} required className="w-full bg-[#f5f5f7] dark:bg-[#121214] border border-neutral-200/60 dark:border-neutral-850 rounded-lg text-xs px-4 py-2.5 text-neutral-800 dark:text-neutral-100 focus:outline-none focus:border-neutral-350 dark:focus:border-neutral-700 cursor-pointer transition-all" />
+              <label htmlFor="project-deadline" className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-400 dark:text-[#5a5a6e]">Deadline *</label>
+              <input id="project-deadline" type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} required className="w-full bg-[#f5f5f7] dark:bg-[#141422] border border-neutral-200/60 dark:border-[#232338] rounded-lg text-xs px-4 py-2.5 text-neutral-800 dark:text-[#e4e4ed] focus:outline-none focus:border-neutral-350 dark:focus:border-[#7c5cfc]/50 cursor-pointer transition-all" />
             </div>
           </div>
 
           <div className="space-y-2.5">
-            <span className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-400 dark:text-neutral-500">Status</span>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border border-neutral-100 dark:border-neutral-900 p-1 bg-neutral-50/50 dark:bg-neutral-900/30 rounded-lg">
+            <span className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-400 dark:text-[#5a5a6e]">Status</span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border border-neutral-100 dark:border-[#1e1e30] p-1 bg-neutral-50/50 dark:bg-[#0a0a12]/50 rounded-lg">
               {STATUS_OPTS.map((item) => (
-                <button key={item.value} type="button" onClick={() => setStatus(item.value)} className={`px-3 py-2 text-xs font-medium text-center rounded transition-all cursor-pointer ${status === item.value ? "bg-white dark:bg-neutral-950 text-neutral-950 dark:text-neutral-50 shadow-sm border border-neutral-150 dark:border-neutral-800 font-semibold" : "text-neutral-400 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-350"}`}>
+                <button key={item.value} type="button" onClick={() => setStatus(item.value)} className={`px-3 py-2 text-xs font-medium text-center rounded transition-all cursor-pointer ${status === item.value ? "bg-white dark:bg-[#7c5cfc] text-neutral-950 dark:text-white shadow-sm border border-neutral-150 dark:border-[#7c5cfc] font-semibold" : "text-neutral-400 dark:text-[#5a5a6e] hover:text-neutral-700 dark:hover:text-neutral-350"}`}>
                   {item.label}
                 </button>
               ))}
@@ -278,12 +278,12 @@ export default function ProjectForm({ isOpen, onClose, onSave, projectToEdit, ca
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="project-notes" className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-400 dark:text-neutral-500">Catatan</label>
-            <textarea id="project-notes" rows={4} placeholder="Catatan tambahan..." value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full bg-[#f5f5f7] dark:bg-[#121214] border border-neutral-200/60 dark:border-neutral-850 rounded-lg text-xs px-4 py-2.5 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:border-neutral-350 dark:focus:border-neutral-700 resize-y leading-relaxed" />
+            <label htmlFor="project-notes" className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-400 dark:text-[#5a5a6e]">Catatan</label>
+            <textarea id="project-notes" rows={4} placeholder="Catatan tambahan..." value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full bg-[#f5f5f7] dark:bg-[#141422] border border-neutral-200/60 dark:border-[#232338] rounded-lg text-xs px-4 py-2.5 text-neutral-800 dark:text-[#e4e4ed] placeholder-neutral-400 focus:outline-none focus:border-neutral-350 dark:focus:border-[#7c5cfc]/50 resize-y leading-relaxed" />
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="project-link" className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-400 dark:text-neutral-500">Link Referensi (Opsional)</label>
+            <label htmlFor="project-link" className="block text-[9px] uppercase font-medium tracking-[0.15em] text-neutral-400 dark:text-[#5a5a6e]">Link Referensi (Opsional)</label>
             <div className="relative">
               <LinkIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-neutral-400" />
               <input
@@ -292,14 +292,14 @@ export default function ProjectForm({ isOpen, onClose, onSave, projectToEdit, ca
                 placeholder="Contoh: https://docs.google.com/..."
                 value={referenceLink}
                 onChange={(e) => setReferenceLink(e.target.value)}
-                className="w-full bg-[#f5f5f7] dark:bg-[#121214] border border-neutral-200/60 dark:border-neutral-850 rounded-lg text-xs pl-10 pr-4 py-2.5 text-neutral-800 dark:text-neutral-100 placeholder-neutral-400 focus:outline-none focus:border-neutral-350 dark:focus:border-neutral-700 transition-all"
+                className="w-full bg-[#f5f5f7] dark:bg-[#141422] border border-neutral-200/60 dark:border-[#232338] rounded-lg text-xs pl-10 pr-4 py-2.5 text-neutral-800 dark:text-[#e4e4ed] placeholder-neutral-400 focus:outline-none focus:border-neutral-350 dark:focus:border-[#7c5cfc]/50 transition-all"
               />
             </div>
           </div>
 
-          <div className="border-t border-neutral-100 dark:border-neutral-900/60 pt-6 flex items-center justify-end gap-3">
-            <button type="button" onClick={onClose} disabled={saving} className="px-4 py-2 border border-neutral-200 dark:border-neutral-850 text-neutral-500 dark:text-neutral-400 rounded-lg hover:bg-neutral-50 hover:text-neutral-850 dark:hover:text-neutral-100 dark:hover:bg-neutral-900 transition-all text-xs font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">Batal</button>
-            <button type="submit" disabled={saving} className="px-5 py-2 bg-neutral-950 dark:bg-neutral-50 text-white dark:text-neutral-950 font-semibold rounded-lg hover:opacity-90 transition-all text-xs cursor-pointer shadow-xs active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+          <div className="border-t border-neutral-100 dark:border-[#1e1e30] pt-6 flex items-center justify-end gap-3">
+            <button type="button" onClick={onClose} disabled={saving} className="px-4 py-2 border border-neutral-200 dark:border-[#232338] text-neutral-500 dark:text-[#8b8b9e] rounded-lg hover:bg-neutral-50 hover:text-neutral-850 dark:hover:text-neutral-100 dark:hover:bg-[#141422] transition-all text-xs font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">Batal</button>
+            <button type="submit" disabled={saving} className="px-5 py-2 bg-[#7c5cfc] text-white font-semibold rounded-lg hover:bg-[#6b4fe0] transition-all text-xs cursor-pointer shadow-xs active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
               {saving ? (
                 <><span className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />{projectToEdit ? "Menyimpan..." : "Menambah..."}</>
               ) : (

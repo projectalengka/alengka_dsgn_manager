@@ -29,14 +29,14 @@ export default function Toast({ message, type = "success", onClose, duration = 4
   return (
     <div
       role="alert"
-      className="fixed bottom-6 right-6 z-[100] flex items-center gap-3 px-4 py-3.5 border border-neutral-200/50 dark:border-neutral-850 rounded-lg shadow-xl backdrop-blur-xl animate-fade-in max-w-sm bg-white/90 dark:bg-neutral-950/90"
+      className="fixed bottom-6 right-6 z-[100] flex items-center gap-3 px-4 py-3.5 border border-neutral-200/50 dark:border-[#1e1e30] rounded-lg shadow-xl backdrop-blur-xl animate-fade-in max-w-sm bg-white/90 dark:bg-[#0f0f1a]/95"
     >
       <div className="flex-shrink-0">{icon}</div>
-      <div className="flex-1 text-xs font-medium font-sans leading-relaxed text-neutral-800 dark:text-neutral-100">{message}</div>
-      <button onClick={onClose} className="text-neutral-400 hover:text-neutral-800 dark:hover:text-white transition-colors cursor-pointer">
+      <div className="flex-1 text-xs font-medium font-sans leading-relaxed text-neutral-800 dark:text-[#e4e4ed]">{message}</div>
+      <button onClick={onClose} className="text-neutral-400 hover:text-neutral-800 dark:hover:text-[#e4e4ed] transition-colors cursor-pointer">
         <X className="w-3.5 h-3.5" />
       </button>
-      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-neutral-100 dark:bg-neutral-900 rounded-b-lg overflow-hidden">
+      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-neutral-100 dark:bg-[#1e1e30] rounded-b-lg overflow-hidden">
         <div className={`h-full ${progress}`} style={{ animation: `shrink ${duration}ms linear forwards` }} />
       </div>
     </div>

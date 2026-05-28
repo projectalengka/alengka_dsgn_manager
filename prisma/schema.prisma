@@ -51,6 +51,19 @@ model Client {
   @@map("clients")
 }
 
+model FinancialRecord {
+  id        String   @id @default(uuid())
+  title     String
+  amount    Float
+  date      DateTime
+  category  String
+  notes     String   @default("") @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("financial_records")
+}
+
 model Studio {
   id        String   @id @default("default")
   name      String   @default("Design Studio")

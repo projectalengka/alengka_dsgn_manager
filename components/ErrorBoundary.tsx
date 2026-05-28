@@ -16,11 +16,11 @@ export default class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-[#f5f5f7] dark:bg-[#09090b] flex items-center justify-center p-6">
+        <div className="min-h-screen bg-[#f5f5f7] dark:bg-[#0a0a12] flex items-center justify-center p-6">
           <div className="text-center space-y-3">
-            <div className="w-10 h-10 rounded bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 mx-auto">!</div>
-            <h2 className="text-sm font-semibold text-neutral-900 dark:text-white">Terjadi Kesalahan</h2>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">Coba refresh halaman.</p>
+            <div className="w-10 h-10 rounded bg-neutral-200 dark:bg-[#141422] flex items-center justify-center text-neutral-500 mx-auto">!</div>
+            <h2 className="text-sm font-semibold text-neutral-900 dark:text-[#e4e4ed]">Terjadi Kesalahan</h2>
+            <p className="text-xs text-neutral-500 dark:text-[#8b8b9e]">Coba refresh halaman.</p>
           </div>
         </div>
       )

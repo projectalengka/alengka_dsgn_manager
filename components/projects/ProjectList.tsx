@@ -81,7 +81,7 @@ export default function ProjectList({ projects, categories, onEdit, onDelete, on
       {!isDashboard && (
         <>
           <div className="space-y-2">
-            <span className="block text-[8.5px] uppercase font-medium tracking-[0.2em] text-neutral-400 dark:text-neutral-500 pl-1">Kategori</span>
+            <span className="block text-[8.5px] uppercase font-medium tracking-[0.2em] text-neutral-400 dark:text-[#5a5a6e] pl-1">Kategori</span>
             <div className="flex items-center gap-2 overflow-x-auto pb-1">
               {["All", ...categories.map((c) => c.id)].map((cat) => {
                 const isSelected = filters.category === cat
@@ -89,36 +89,36 @@ export default function ProjectList({ projects, categories, onEdit, onDelete, on
                 return (
                   <button key={cat} onClick={() => setFilters((prev) => ({ ...prev, category: cat }))}
                     className={`px-3.5 py-1.5 text-xs font-medium rounded-lg border flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
-                      isSelected ? "bg-neutral-950 dark:bg-neutral-100 border-transparent text-white dark:text-neutral-950 shadow-xs" : "bg-white dark:bg-[#0d0d0f]/60 border-neutral-200 dark:border-neutral-900/60 text-neutral-550 dark:text-neutral-400 hover:bg-neutral-50/60 hover:text-neutral-950 dark:hover:text-white"
+                      isSelected ? "bg-[#7c5cfc] dark:bg-[#7c5cfc] border-transparent text-white dark:text-white shadow-xs" : "bg-white dark:bg-[#0f0f1a]/60 border-neutral-200 dark:border-[#1e1e30] text-neutral-550 dark:text-[#8b8b9e] hover:bg-neutral-50/60 hover:text-neutral-950 dark:hover:text-[#e4e4ed]"
                     }`}>
                     {cat === "All" ? <Layers className="w-3.5 h-3.5" /> : getCatIcon(cat)}
                     <span>{cat === "All" ? "Semua" : getCatName(cat)}</span>
-                    <span className={`text-[9px] font-mono px-1.5 py-0.2 rounded-full ${isSelected ? "bg-white/20 dark:bg-neutral-950/20" : "bg-neutral-100 dark:bg-neutral-900 text-neutral-400"}`}>{count}</span>
+                    <span className={`text-[9px] font-mono px-1.5 py-0.2 rounded-full ${isSelected ? "bg-white/20 dark:bg-white/20" : "bg-neutral-100 dark:bg-[#141422] text-neutral-400 dark:text-[#5a5a6e]"}`}>{count}</span>
                   </button>
                 )
               })}
             </div>
           </div>
 
-          <div className="bg-white dark:bg-[#0d0d0f]/50 border border-neutral-200 dark:border-neutral-900/60 rounded-xl p-4 space-y-4 shadow-xs">
+          <div className="bg-white dark:bg-[#0f0f1a]/80 border border-neutral-200 dark:border-[#1e1e30] rounded-xl p-4 space-y-4 shadow-xs">
             <div className="flex flex-col lg:flex-row gap-3">
               <div className="relative flex-1">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 w-3.5 h-3.5" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-[#5a5a6e] w-3.5 h-3.5" />
                 <input type="text" placeholder="Cari klien atau proyek..." value={filters.search} onChange={(e) => setFilters((p) => ({ ...p, search: e.target.value }))}
-                  className="w-full bg-[#f5f5f7] dark:bg-[#121214]/60 border border-neutral-200/60 dark:border-neutral-850/40 text-xs pl-10 pr-4 py-2 rounded-lg text-neutral-800 dark:text-neutral-250 placeholder-neutral-400 focus:outline-none focus:border-neutral-350 dark:focus:border-neutral-700 transition-all" />
+                  className="w-full bg-[#f5f5f7] dark:bg-[#141422]/60 border border-neutral-200/60 dark:border-[#232338] text-xs pl-10 pr-4 py-2 rounded-lg text-neutral-800 dark:text-[#c8c8d8] placeholder-neutral-400 dark:placeholder-[#5a5a6e] focus:outline-none focus:border-neutral-350 dark:focus:border-[#7c5cfc]/50 transition-all" />
               </div>
               <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                <div className="flex items-center gap-1.5 bg-[#f5f5f7] dark:bg-[#121214]/60 border border-neutral-200/60 dark:border-neutral-850/40 rounded-lg px-2.5 py-1.5">
-                  <span className="text-[8.5px] font-semibold text-neutral-400 uppercase tracking-widest">Status:</span>
-                  <select value={filters.status} onChange={(e) => setFilters((p) => ({ ...p, status: e.target.value }))} className="bg-transparent text-xs text-neutral-700 dark:text-neutral-300 focus:outline-none font-medium cursor-pointer">
+                <div className="flex items-center gap-1.5 bg-[#f5f5f7] dark:bg-[#141422]/60 border border-neutral-200/60 dark:border-[#232338] rounded-lg px-2.5 py-1.5">
+                  <span className="text-[8.5px] font-semibold text-neutral-400 dark:text-[#5a5a6e] uppercase tracking-widest">Status:</span>
+                  <select value={filters.status} onChange={(e) => setFilters((p) => ({ ...p, status: e.target.value }))} className="bg-transparent text-xs text-neutral-700 dark:text-[#a0a0b4] focus:outline-none font-medium cursor-pointer">
                     {STATUSES.map((st) => (
                       <option key={st} value={st}>{st === "All" ? "Semua Status" : statusLabels[st]}</option>
                     ))}
                   </select>
                 </div>
-                <div className="flex items-center gap-1.5 bg-[#f5f5f7] dark:bg-[#121214]/60 border border-neutral-200/60 dark:border-neutral-850/40 rounded-lg px-2.5 py-1.5">
-                  <ArrowUpDown className="w-3 h-3 text-neutral-400" />
-                  <select value={filters.sortBy} onChange={(e) => setFilters((p) => ({ ...p, sortBy: e.target.value as Filters["sortBy"] }))} className="bg-transparent text-xs text-neutral-700 dark:text-neutral-300 focus:outline-none font-medium cursor-pointer">
+                <div className="flex items-center gap-1.5 bg-[#f5f5f7] dark:bg-[#141422]/60 border border-neutral-200/60 dark:border-[#232338] rounded-lg px-2.5 py-1.5">
+                  <ArrowUpDown className="w-3 h-3 text-neutral-400 dark:text-[#5a5a6e]" />
+                  <select value={filters.sortBy} onChange={(e) => setFilters((p) => ({ ...p, sortBy: e.target.value as Filters["sortBy"] }))} className="bg-transparent text-xs text-neutral-700 dark:text-[#a0a0b4] focus:outline-none font-medium cursor-pointer">
                       <option value="createdAt_desc">Terbaru</option>
                     <option value="createdAt_asc">Terlama</option>
                     <option value="price_desc">Termahal</option>
@@ -126,16 +126,16 @@ export default function ProjectList({ projects, categories, onEdit, onDelete, on
                   </select>
                 </div>
                 {(filters.search || filters.category !== "All" || filters.status !== "All") && (
-                  <button onClick={() => setFilters({ search: "", status: "All", category: "All", sortBy: "createdAt_desc" })} className="p-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-900/60 dark:hover:bg-neutral-800 text-neutral-500 rounded-lg border border-neutral-200/60 dark:border-neutral-800/40 transition-colors cursor-pointer">
+                  <button onClick={() => setFilters({ search: "", status: "All", category: "All", sortBy: "createdAt_desc" })} className="p-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-[#141422]/60 dark:hover:bg-[#1a1a2e] text-neutral-500 dark:text-[#8b8b9e] rounded-lg border border-neutral-200/60 dark:border-[#232338] transition-colors cursor-pointer">
                     <RotateCcw className="w-3.5 h-3.5" />
                   </button>
                 )}
-                <button onClick={handleExportCSV} className="px-3 py-1.5 border border-neutral-200 dark:border-neutral-850/50 text-neutral-500 bg-white dark:bg-[#121214]/30 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer">
+                <button onClick={handleExportCSV} className="px-3 py-1.5 border border-neutral-200 dark:border-[#232338] text-neutral-500 dark:text-[#8b8b9e] bg-white dark:bg-[#141422]/30 hover:bg-neutral-100 dark:hover:bg-[#1a1a2e] rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer">
                   <FileSpreadsheet className="w-3.5 h-3.5" />CSV
                 </button>
                 {selectedIds.length > 0 && (
-                  <button onClick={() => setIsInvoiceOpen(true)} className="px-3.5 py-1.5 bg-neutral-950 dark:bg-white text-white dark:text-neutral-950 hover:bg-neutral-800 dark:hover:bg-neutral-200 font-bold rounded-lg text-[11px] flex items-center gap-1.5 transition-all cursor-pointer shadow-sm animate-fade-in">
-                    <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-600" />
+                  <button onClick={() => setIsInvoiceOpen(true)} className="px-3.5 py-1.5 bg-[#7c5cfc] dark:bg-[#7c5cfc] text-white dark:text-white hover:bg-[#6b4fe0] dark:hover:bg-[#6b4fe0] font-bold rounded-lg text-[11px] flex items-center gap-1.5 transition-all cursor-pointer shadow-sm animate-fade-in">
+                    <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-400" />
                     Buat Invoice ({selectedIds.length})
                   </button>
                 )}
@@ -147,20 +147,20 @@ export default function ProjectList({ projects, categories, onEdit, onDelete, on
 
       {filteredProjects.length === 0 ? (
         <div className="py-16 px-6 text-center">
-          <div className="w-10 h-10 rounded-lg bg-[#f5f5f7] dark:bg-neutral-900 border border-neutral-200/50 dark:border-neutral-800 flex items-center justify-center text-neutral-400 mx-auto mb-4">
+          <div className="w-10 h-10 rounded-lg bg-[#f5f5f7] dark:bg-[#141422] border border-neutral-200/50 dark:border-[#2a2a44] flex items-center justify-center text-neutral-400 dark:text-[#5a5a6e] mx-auto mb-4">
             <Layers className="w-4 h-4" />
           </div>
-          <h3 className="text-sm font-semibold text-neutral-900 dark:text-white">Belum Ada Proyek</h3>
-          <p className="text-xs text-neutral-450 dark:text-neutral-500 mt-1.5">Belum ada proyek nih~</p>
+          <h3 className="text-sm font-semibold text-neutral-900 dark:text-[#e4e4ed]">Belum Ada Proyek</h3>
+          <p className="text-xs text-neutral-450 dark:text-[#5a5a6e] mt-1.5">Belum ada proyek nih~</p>
         </div>
       ) : (
         <>
-          <div className="hidden md:block bg-white dark:bg-[#0d0d0f]/50 border border-neutral-200 dark:border-neutral-900/60 rounded-xl shadow-xs overflow-hidden animate-fade-in">
+          <div className="hidden md:block bg-white dark:bg-[#0f0f1a]/80 border border-neutral-200 dark:border-[#1e1e30] rounded-xl shadow-xs overflow-hidden animate-fade-in">
             <div className="overflow-x-auto max-h-[60vh] overflow-y-auto custom-scrollbar relative">
               <table className="w-full text-left border-collapse">
-                <thead className="sticky top-0 bg-white/95 dark:bg-[#0d0d0f]/95 backdrop-blur-md z-10 shadow-sm border-b border-neutral-100 dark:border-neutral-900/50">
-                  <tr className="text-[10px] uppercase font-bold tracking-wider text-neutral-400 dark:text-neutral-500">
-                    <th className="py-5 px-6 w-12"><input type="checkbox" checked={selectedIds.length === filteredProjects.length && filteredProjects.length > 0} onChange={(e) => setSelectedIds(e.target.checked ? filteredProjects.map((p) => p.id) : [])} className="w-4 h-4 rounded border-neutral-300 cursor-pointer accent-neutral-900 dark:accent-white" /></th>
+                <thead className="sticky top-0 bg-white/95 dark:bg-[#0f0f1a]/95 backdrop-blur-md z-10 shadow-sm border-b border-neutral-100 dark:border-[#1e1e30]/50">
+                  <tr className="text-[10px] uppercase font-bold tracking-wider text-neutral-400 dark:text-[#5a5a6e]">
+                    <th className="py-5 px-6 w-12"><input type="checkbox" checked={selectedIds.length === filteredProjects.length && filteredProjects.length > 0} onChange={(e) => setSelectedIds(e.target.checked ? filteredProjects.map((p) => p.id) : [])} className="w-4 h-4 rounded border-neutral-300 cursor-pointer accent-[#7c5cfc] dark:accent-[#7c5cfc]" /></th>
                     <th className="py-5 px-6">Klien & Proyek</th>
                     <th className="py-5 px-4 text-center">Kategori</th>
                     <th className="py-5 px-4 text-center">Status</th>
@@ -169,36 +169,36 @@ export default function ProjectList({ projects, categories, onEdit, onDelete, on
                     <th className="py-5 px-6 text-right">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-100 dark:divide-neutral-900/40">
+                <tbody className="divide-y divide-neutral-100 dark:divide-[#1e1e30]/40">
                   {filteredProjects.map((p) => (
-                    <tr key={p.id} className="hover:bg-neutral-50/80 dark:hover:bg-[#121214]/50 transition-colors group">
+                    <tr key={p.id} className="hover:bg-neutral-50/80 dark:hover:bg-[#141422]/50 transition-colors group">
                       <td className="py-5 px-6 text-center">
-                        <input type="checkbox" checked={selectedIds.includes(p.id)} onChange={() => setSelectedIds((prev) => prev.includes(p.id) ? prev.filter((id) => id !== p.id) : [...prev, p.id])} className="w-4 h-4 rounded border-neutral-300 cursor-pointer accent-neutral-900 dark:accent-white opacity-40 group-hover:opacity-100 transition-opacity" />
+                        <input type="checkbox" checked={selectedIds.includes(p.id)} onChange={() => setSelectedIds((prev) => prev.includes(p.id) ? prev.filter((id) => id !== p.id) : [...prev, p.id])} className="w-4 h-4 rounded border-neutral-300 cursor-pointer accent-[#7c5cfc] dark:accent-[#7c5cfc] opacity-40 group-hover:opacity-100 transition-opacity" />
                       </td>
                       <td className="py-5 px-6">
                         <div className="flex items-center gap-4">
-                          <div className="w-11 h-11 rounded-xl bg-neutral-100/80 dark:bg-neutral-900/50 border border-neutral-200/50 dark:border-neutral-800/50 flex items-center justify-center text-neutral-400 shrink-0">{getCatIcon(p.categoryId)}</div>
+                          <div className="w-11 h-11 rounded-xl bg-neutral-100/80 dark:bg-[#141422]/50 border border-neutral-200/50 dark:border-[#232338] flex items-center justify-center text-neutral-400 dark:text-[#8b8b9e] shrink-0">{getCatIcon(p.categoryId)}</div>
                           <div className="max-w-xs overflow-hidden">
-                            <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 block uppercase tracking-wider">{p.clientName}</span>
-                            <span className="text-[13px] font-semibold text-neutral-800 dark:text-neutral-200 block truncate mt-0.5">{p.projectTitle}</span>
+                            <span className="text-[10px] font-bold text-neutral-400 dark:text-[#5a5a6e] block uppercase tracking-wider">{p.clientName}</span>
+                            <span className="text-[13px] font-semibold text-neutral-800 dark:text-[#c8c8d8] block truncate mt-0.5">{p.projectTitle}</span>
                             <div className="flex items-center gap-3 mt-1.5">
                               {p.notes && (
-                                <button onClick={() => setExpandedNotesId(expandedNotesId === p.id ? null : p.id)} className="text-[11px] font-medium text-neutral-400 dark:text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200 flex items-center gap-1 cursor-pointer transition-colors">
+                                <button onClick={() => setExpandedNotesId(expandedNotesId === p.id ? null : p.id)} className="text-[11px] font-medium text-neutral-400 dark:text-[#5a5a6e] hover:text-neutral-900 dark:hover:text-[#c8c8d8] flex items-center gap-1 cursor-pointer transition-colors">
                                   <Eye className="w-3.5 h-3.5" />{expandedNotesId === p.id ? "Sembunyikan" : "Catatan"}
                                 </button>
                               )}
                               {p.referenceLink && (
-                                <a href={p.referenceLink} target="_blank" rel="noopener noreferrer" className="text-[11px] font-medium text-neutral-400 dark:text-neutral-500 hover:text-blue-500 flex items-center gap-1 cursor-pointer transition-colors">
+                                <a href={p.referenceLink} target="_blank" rel="noopener noreferrer" className="text-[11px] font-medium text-neutral-400 dark:text-[#5a5a6e] hover:text-blue-500 dark:hover:text-[#a78bfa] flex items-center gap-1 cursor-pointer transition-colors">
                                   <LinkIcon className="w-3.5 h-3.5" /> Referensi
                                 </a>
                               )}
                             </div>
-                            {expandedNotesId === p.id && <p className="mt-3 text-[12px] text-neutral-600 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-100 dark:border-neutral-800/50 rounded-lg p-3 max-w-sm leading-relaxed shadow-sm">{p.notes}</p>}
+                            {expandedNotesId === p.id && <p className="mt-3 text-[12px] text-neutral-600 dark:text-[#8b8b9e] bg-neutral-50 dark:bg-[#141422]/50 border border-neutral-100 dark:border-[#232338] rounded-lg p-3 max-w-sm leading-relaxed shadow-sm">{p.notes}</p>}
                           </div>
                         </div>
                       </td>
                       <td className="py-5 px-4 text-center">
-                        <span className="inline-flex items-center gap-1.5 text-[12px] text-neutral-500 dark:text-neutral-400 font-medium">
+                        <span className="inline-flex items-center gap-1.5 text-[12px] text-neutral-500 dark:text-[#8b8b9e] font-medium">
                           {getCatIcon(p.categoryId)}{getCatName(p.categoryId)}
                         </span>
                       </td>
@@ -213,16 +213,16 @@ export default function ProjectList({ projects, categories, onEdit, onDelete, on
                           <StatusBadge status={p.status} />
                         </div>
                       </td>
-                      <td className="py-5 px-4 text-right font-mono text-neutral-800 dark:text-neutral-200 font-semibold text-[13px]">{formatCurrency(p.price)}</td>
+                      <td className="py-5 px-4 text-right font-mono text-neutral-800 dark:text-[#c8c8d8] font-semibold text-[13px]">{formatCurrency(p.price)}</td>
                       <td className="py-5 px-4 text-center">
                         <div className="space-y-1">
-                          <span className="text-neutral-800 dark:text-neutral-200 block text-[12px] font-semibold">{formatDate(p.deadline)}</span>
-                          <span className="text-[10px] text-neutral-400 dark:text-neutral-500 block">Dibuat {formatDate(p.createdAt)}</span>
+                          <span className="text-neutral-800 dark:text-[#c8c8d8] block text-[12px] font-semibold">{formatDate(p.deadline)}</span>
+                          <span className="text-[10px] text-neutral-400 dark:text-[#5a5a6e] block">Dibuat {formatDate(p.createdAt)}</span>
                         </div>
                       </td>
                       <td className="py-5 px-6 text-right">
                         <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button onClick={() => onEdit(p)} className="p-2 text-neutral-400 hover:text-neutral-800 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-all cursor-pointer" title="Edit"><Edit2 className="w-4 h-4" /></button>
+                          <button onClick={() => onEdit(p)} className="p-2 text-neutral-400 dark:text-[#5a5a6e] hover:text-neutral-800 dark:hover:text-[#e4e4ed] hover:bg-neutral-100 dark:hover:bg-[#1a1a2e] rounded-lg transition-all cursor-pointer" title="Edit"><Edit2 className="w-4 h-4" /></button>
                           <button onClick={() => onDelete(p)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all cursor-pointer" title="Hapus"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       </td>
@@ -235,46 +235,46 @@ export default function ProjectList({ projects, categories, onEdit, onDelete, on
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:hidden pb-20 animate-fade-in">
             {filteredProjects.map((p) => (
-              <div key={p.id} className="bg-white dark:bg-[#0d0d0f]/50 border border-neutral-200 dark:border-neutral-900/60 rounded-xl p-5 space-y-4 shadow-xs">
+              <div key={p.id} className="bg-white dark:bg-[#0f0f1a]/80 border border-neutral-200 dark:border-[#1e1e30] rounded-xl p-5 space-y-4 shadow-xs">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-start gap-2 max-w-[70%]">
                     <input type="checkbox" checked={selectedIds.includes(p.id)} onChange={() => setSelectedIds((prev) => prev.includes(p.id) ? prev.filter((id) => id !== p.id) : [...prev, p.id])} className="w-3.5 h-3.5 rounded border-neutral-300 mt-0.5 cursor-pointer" />
                     <div className="space-y-0.5 truncate">
-                      <span className="text-[9px] font-medium uppercase tracking-widest text-neutral-400 dark:text-neutral-500 block truncate">{p.clientName}</span>
-                      <h4 className="text-xs font-semibold text-neutral-850 dark:text-neutral-200 leading-tight">{p.projectTitle}</h4>
+                      <span className="text-[9px] font-medium uppercase tracking-widest text-neutral-400 dark:text-[#5a5a6e] block truncate">{p.clientName}</span>
+                      <h4 className="text-xs font-semibold text-neutral-850 dark:text-[#c8c8d8] leading-tight">{p.projectTitle}</h4>
                     </div>
                   </div>
-                  <span className="text-xs font-semibold font-mono text-neutral-900 dark:text-white bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 px-2.5 py-0.5 rounded shrink-0">{formatCurrency(p.price)}</span>
+                  <span className="text-xs font-semibold font-mono text-neutral-900 dark:text-[#e4e4ed] bg-neutral-100 dark:bg-[#141422] border border-neutral-200 dark:border-[#232338] px-2.5 py-0.5 rounded shrink-0">{formatCurrency(p.price)}</span>
                 </div>
                 {p.referenceLink && (
                   <div className="flex items-center gap-2">
-                    <a href={p.referenceLink} target="_blank" rel="noopener noreferrer" className="text-[10px] font-medium text-blue-500 hover:text-blue-600 flex items-center gap-1">
+                    <a href={p.referenceLink} target="_blank" rel="noopener noreferrer" className="text-[10px] font-medium text-blue-500 hover:text-blue-600 dark:text-[#a78bfa] dark:hover:text-[#7c5cfc] flex items-center gap-1">
                       <LinkIcon className="w-3.5 h-3.5" /> Lihat Link Referensi
                     </a>
                   </div>
                 )}
                 <div className="flex items-center gap-1.5 flex-wrap text-[10px]">
-                  <span className="inline-flex items-center px-2 py-0.5 text-[9.5px] text-neutral-500 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-900 border border-neutral-150 dark:border-[#1d1d23] rounded">
+                  <span className="inline-flex items-center px-2 py-0.5 text-[9.5px] text-neutral-500 dark:text-[#8b8b9e] bg-neutral-50 dark:bg-[#141422] border border-neutral-150 dark:border-[#232338] rounded">
                     {getCatIcon(p.categoryId)}{getCatName(p.categoryId)}
                   </span>
                   <StatusBadge status={p.status} />
                 </div>
-                <div className="text-[10px] text-neutral-600 dark:text-neutral-400 space-y-1 bg-neutral-50/55 dark:bg-neutral-950/25 p-3 rounded-lg border border-neutral-150 dark:border-neutral-900/80">
-                  <div className="flex items-center gap-1.5 font-medium text-neutral-750 dark:text-neutral-350">
-                    <Calendar className="w-3.5 h-3.5 text-neutral-400" />
+                <div className="text-[10px] text-neutral-600 dark:text-[#8b8b9e] space-y-1 bg-neutral-50/55 dark:bg-[#141422]/25 p-3 rounded-lg border border-neutral-150 dark:border-[#1e1e30]/80">
+                  <div className="flex items-center gap-1.5 font-medium text-neutral-750 dark:text-[#a0a0b4]">
+                    <Calendar className="w-3.5 h-3.5 text-neutral-400 dark:text-[#5a5a6e]" />
                     <span>Deadline: {formatDate(p.deadline)}</span>
                   </div>
                 </div>
-                <div className="border-t border-neutral-100 dark:border-neutral-900/60 pt-3 flex items-center justify-between">
+                <div className="border-t border-neutral-100 dark:border-[#1e1e30]/60 pt-3 flex items-center justify-between">
                   <select value={p.status} onChange={(e) => onStatusChange(p.id, e.target.value as ProjectStatus)}
-                    className="bg-transparent border border-neutral-150 dark:border-neutral-900 rounded px-2 py-1 text-[10px] text-neutral-600 dark:text-neutral-400 cursor-pointer focus:outline-none">
+                    className="bg-transparent border border-neutral-150 dark:border-[#232338] rounded px-2 py-1 text-[10px] text-neutral-600 dark:text-[#8b8b9e] cursor-pointer focus:outline-none">
                     <option value="On Progress">Berjalan</option>
                     <option value="Revisi">Revisi</option>
                     <option value="Done">Selesai</option>
                     <option value="Cancel">Batal</option>
                   </select>
                   <div className="flex gap-1">
-                    <button onClick={() => onEdit(p)} className="p-1.5 text-neutral-400 hover:text-neutral-800 dark:hover:text-white transition-colors cursor-pointer"><Edit2 className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => onEdit(p)} className="p-1.5 text-neutral-400 dark:text-[#5a5a6e] hover:text-neutral-800 dark:hover:text-[#e4e4ed] transition-colors cursor-pointer"><Edit2 className="w-3.5 h-3.5" /></button>
                     <button onClick={() => onDelete(p)} className="p-1.5 text-red-500 hover:text-red-700 transition-colors cursor-pointer"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                 </div>

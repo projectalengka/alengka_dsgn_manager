@@ -58,7 +58,35 @@ export interface Category {
   _count?: { projects: number }
 }
 
-export type Tab = "dashboard" | "projects" | "analytics" | "categories" | "crm"
+export interface FinancialRecord {
+  id: string
+  title: string
+  amount: number
+  date: Date
+  category: string
+  notes: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface FinanceFormData {
+  title: string
+  amount: number
+  date: string
+  category: string
+  notes: string
+}
+
+export interface FinanceSummary {
+  totalIncome: number
+  transactionCount: number
+  maxIncome: number
+  lastMonthIncome: number
+  comparisonPercent: number
+  monthlyData: { month: string; total: number }[]
+}
+
+export type Tab = "dashboard" | "projects" | "analytics" | "categories" | "crm" | "keuangan"
 
 export interface Filters {
   search: string

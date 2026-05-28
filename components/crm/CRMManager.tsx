@@ -98,12 +98,12 @@ export default function CRMManager({ clients, onChange }: CRMManagerProps) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h3 className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-[0.2em]">Database Klien</h3>
-          <p className="text-xs text-neutral-450 dark:text-neutral-400 mt-0.5">{clients.length} klien terdaftar</p>
+          <h3 className="text-[10px] font-medium text-neutral-400 dark:text-[#5a5a6e] uppercase tracking-[0.2em]">Database Klien</h3>
+          <p className="text-xs text-neutral-450 dark:text-[#8b8b9e] mt-0.5">{clients.length} klien terdaftar</p>
         </div>
         <button
           onClick={openCreate}
-          className="px-4 py-2 bg-neutral-950 dark:bg-neutral-100 text-white dark:text-neutral-950 rounded-xl text-xs font-semibold flex items-center gap-2 hover:opacity-90 transition-all cursor-pointer shadow-sm active:scale-[0.98]"
+          className="px-4 py-2 bg-[#7c5cfc] hover:bg-[#6b4fe0] text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-sm active:scale-[0.98]"
         >
           <Plus className="w-3.5 h-3.5" /> Tambah Klien
         </button>
@@ -117,18 +117,18 @@ export default function CRMManager({ clients, onChange }: CRMManagerProps) {
           placeholder="Cari klien, perusahaan, email..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className="w-full bg-white dark:bg-[#0d0d0f]/50 border border-neutral-200 dark:border-neutral-900 rounded-xl pl-10 pr-4 py-2.5 text-xs text-neutral-800 dark:text-neutral-200 placeholder-neutral-400 focus:outline-none focus:border-neutral-400 dark:focus:border-neutral-600 transition-all"
+          className="w-full bg-white dark:bg-[#0f0f1a]/80 border border-neutral-200 dark:border-[#1e1e30] rounded-xl pl-10 pr-4 py-2.5 text-xs text-neutral-800 dark:text-[#c8c8d8] placeholder-neutral-400 focus:outline-none focus:border-neutral-400 dark:focus:border-[#7c5cfc]/50 transition-all"
         />
       </div>
 
       {filtered.length === 0 ? (
         <div className="py-16 text-center">
-          <div className="w-12 h-12 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 flex items-center justify-center text-neutral-400 mx-auto mb-4">
+          <div className="w-12 h-12 rounded-xl bg-neutral-100 dark:bg-[#141422] border border-neutral-200 dark:border-[#2a2a44] flex items-center justify-center text-neutral-400 mx-auto mb-4">
             <Users className="w-5 h-5" />
           </div>
-          <p className="text-sm font-semibold text-neutral-900 dark:text-white">Belum ada klien</p>
+          <p className="text-sm font-semibold text-neutral-900 dark:text-[#e4e4ed]">Belum ada klien</p>
           <p className="text-xs text-neutral-400 mt-1">Tambah klien pertamamu sekarang</p>
-          <button onClick={openCreate} className="mt-4 px-4 py-2 bg-neutral-950 dark:bg-neutral-100 text-white dark:text-neutral-950 rounded-xl text-xs font-semibold cursor-pointer hover:opacity-90 transition-all">
+          <button onClick={openCreate} className="mt-4 px-4 py-2 bg-[#7c5cfc] hover:bg-[#6b4fe0] text-white rounded-xl text-xs font-semibold cursor-pointer transition-all">
             + Tambah Klien
           </button>
         </div>
@@ -137,7 +137,7 @@ export default function CRMManager({ clients, onChange }: CRMManagerProps) {
           {filtered.map(c => (
             <div
               key={c.id}
-              className="bg-white dark:bg-[#0d0d0f]/50 border border-neutral-200 dark:border-neutral-900/60 rounded-xl p-4 hover:border-neutral-300 dark:hover:border-neutral-700 transition-all cursor-pointer group"
+              className="bg-white dark:bg-[#0f0f1a]/80 border border-neutral-200 dark:border-[#1e1e30] rounded-xl p-4 hover:border-neutral-300 dark:hover:border-[#7c5cfc]/20 transition-all cursor-pointer group"
               onClick={() => setSelectedClient(c.id === selectedClient?.id ? null : c)}
             >
               <div className="flex items-start gap-3">
@@ -145,12 +145,12 @@ export default function CRMManager({ clients, onChange }: CRMManagerProps) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <div className="text-xs font-bold text-neutral-900 dark:text-white truncate">{c.name}</div>
-                      {c.company && <div className="text-[10px] text-neutral-400 truncate flex items-center gap-1 mt-0.5"><Building2 className="w-2.5 h-2.5" />{c.company}</div>}
+                      <div className="text-xs font-bold text-neutral-900 dark:text-[#e4e4ed] truncate">{c.name}</div>
+                      {c.company && <div className="text-[10px] text-neutral-400 dark:text-[#8b8b9e] truncate flex items-center gap-1 mt-0.5"><Building2 className="w-2.5 h-2.5" />{c.company}</div>}
                     </div>
                     <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onClick={e => { e.stopPropagation(); openEdit(c) }}
-                        className="p-1.5 text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-all cursor-pointer">
+                        className="p-1.5 text-neutral-400 hover:text-neutral-900 dark:hover:text-[#e4e4ed] hover:bg-neutral-100 dark:hover:bg-[#1a1a2e] rounded-lg transition-all cursor-pointer">
                         <Edit2 className="w-3 h-3" />
                       </button>
                       <button onClick={e => { e.stopPropagation(); setDeleteTarget(c) }}
@@ -168,12 +168,12 @@ export default function CRMManager({ clients, onChange }: CRMManagerProps) {
                         <Phone className="w-2.5 h-2.5" />{c.phone}
                       </a>
                     )}
-                    {c.email && <div className="flex items-center gap-1.5 text-[10px] text-neutral-500"><Mail className="w-2.5 h-2.5" />{c.email}</div>}
-                    {c.address && <div className="flex items-center gap-1.5 text-[10px] text-neutral-400 truncate"><MapPin className="w-2.5 h-2.5 shrink-0" />{c.address}</div>}
+                    {c.email && <div className="flex items-center gap-1.5 text-[10px] text-neutral-500 dark:text-[#8b8b9e]"><Mail className="w-2.5 h-2.5" />{c.email}</div>}
+                    {c.address && <div className="flex items-center gap-1.5 text-[10px] text-neutral-400 dark:text-[#5a5a6e] truncate"><MapPin className="w-2.5 h-2.5 shrink-0" />{c.address}</div>}
                   </div>
 
                   <div className="mt-2.5 flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-neutral-100 dark:bg-neutral-900 text-[9px] font-medium text-neutral-500 rounded-full">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-neutral-100 dark:bg-[#141422] text-[9px] font-medium text-neutral-500 dark:text-[#8b8b9e] rounded-full">
                       <FileText className="w-2.5 h-2.5" />{c._count?.projects ?? 0} proyek
                     </span>
                     <ChevronRight className={`w-3 h-3 text-neutral-400 transition-transform ${selectedClient?.id === c.id ? "rotate-90" : ""}`} />
@@ -183,9 +183,9 @@ export default function CRMManager({ clients, onChange }: CRMManagerProps) {
 
               {/* Expanded detail */}
               {selectedClient?.id === c.id && c.notes && (
-                <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-900">
+                <div className="mt-3 pt-3 border-t border-neutral-100 dark:border-[#1e1e30]">
                   <p className="text-[10px] text-neutral-400 uppercase tracking-wider font-semibold mb-1">Catatan</p>
-                  <p className="text-[11px] text-neutral-600 dark:text-neutral-400 leading-relaxed">{c.notes}</p>
+                  <p className="text-[11px] text-neutral-600 dark:text-[#8b8b9e] leading-relaxed">{c.notes}</p>
                 </div>
               )}
             </div>
@@ -197,14 +197,14 @@ export default function CRMManager({ clients, onChange }: CRMManagerProps) {
       {isFormOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsFormOpen(false)} />
-          <div className="relative bg-white dark:bg-[#0d0d0f] border border-neutral-200 dark:border-neutral-900 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
+          <div className="relative bg-white dark:bg-[#0f0f1a] border border-neutral-200 dark:border-[#1e1e30] rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
 
-            <div className="sticky top-0 bg-white dark:bg-[#0d0d0f] px-6 py-4 border-b border-neutral-100 dark:border-neutral-900 flex items-center justify-between z-10">
+            <div className="sticky top-0 bg-white dark:bg-[#0f0f1a] px-6 py-4 border-b border-neutral-100 dark:border-[#1e1e30] flex items-center justify-between z-10">
               <div>
-                <h2 className="text-xs font-bold text-neutral-900 dark:text-white">{editingClient ? "Edit Klien" : "Tambah Klien Baru"}</h2>
-                <p className="text-[10px] text-neutral-400 mt-0.5">Hanya nama yang wajib diisi</p>
+                <h2 className="text-xs font-bold text-neutral-900 dark:text-[#e4e4ed]">{editingClient ? "Edit Klien" : "Tambah Klien Baru"}</h2>
+                <p className="text-[10px] text-neutral-400 dark:text-[#5a5a6e] mt-0.5">Hanya nama yang wajib diisi</p>
               </div>
-              <button onClick={() => setIsFormOpen(false)} className="p-2 rounded-xl bg-neutral-100 dark:bg-neutral-900 text-neutral-400 hover:text-neutral-800 dark:hover:text-white transition-all cursor-pointer">
+              <button onClick={() => setIsFormOpen(false)} className="p-2 rounded-xl bg-neutral-100 dark:bg-[#141422] text-neutral-400 hover:text-neutral-800 dark:hover:text-[#e4e4ed] transition-all cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -240,11 +240,11 @@ export default function CRMManager({ clients, onChange }: CRMManagerProps) {
 
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setIsFormOpen(false)} disabled={saving}
-                  className="flex-1 py-2.5 border border-neutral-200 dark:border-neutral-800 text-neutral-500 rounded-xl text-xs font-medium hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all cursor-pointer">
+                  className="flex-1 py-2.5 border border-neutral-200 dark:border-[#232338] text-neutral-500 rounded-xl text-xs font-medium hover:bg-neutral-50 dark:hover:bg-[#141422] transition-all cursor-pointer">
                   Batal
                 </button>
                 <button type="button" onClick={handleSave} disabled={saving}
-                  className="flex-1 py-2.5 bg-neutral-950 dark:bg-neutral-100 text-white dark:text-neutral-950 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all cursor-pointer disabled:opacity-60">
+                  className="flex-1 py-2.5 bg-[#7c5cfc] hover:bg-[#6b4fe0] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-60">
                   {saving ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Menyimpan...</> : (editingClient ? "Simpan Perubahan" : "Tambah Klien")}
                 </button>
               </div>
@@ -257,14 +257,14 @@ export default function CRMManager({ clients, onChange }: CRMManagerProps) {
       {deleteTarget && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setDeleteTarget(null)} />
-          <div className="relative bg-white dark:bg-[#0d0d0f] border border-neutral-200 dark:border-neutral-900 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+          <div className="relative bg-white dark:bg-[#0f0f1a] border border-neutral-200 dark:border-[#1e1e30] rounded-2xl p-6 w-full max-w-sm shadow-2xl">
             <div className="text-center">
               <div className="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 flex items-center justify-center mx-auto mb-4">
                 <Trash2 className="w-5 h-5 text-red-500" />
               </div>
-              <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Hapus Klien?</h3>
-              <p className="text-xs text-neutral-500 mt-2">
-                <span className="font-semibold text-neutral-700 dark:text-neutral-300">{deleteTarget.name}</span> akan dihapus.
+              <h3 className="text-sm font-bold text-neutral-900 dark:text-[#e4e4ed]">Hapus Klien?</h3>
+              <p className="text-xs text-neutral-500 dark:text-[#8b8b9e] mt-2">
+                <span className="font-semibold text-neutral-700 dark:text-[#a0a0b4]">{deleteTarget.name}</span> akan dihapus.
                 {(deleteTarget._count?.projects ?? 0) > 0 && (
                   <> Proyek terkait ({deleteTarget._count?.projects}) <strong>tidak</strong> akan ikut terhapus.</>
                 )}
@@ -272,7 +272,7 @@ export default function CRMManager({ clients, onChange }: CRMManagerProps) {
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setDeleteTarget(null)} disabled={deleting}
-                className="flex-1 py-2.5 border border-neutral-200 dark:border-neutral-800 text-neutral-500 rounded-xl text-xs font-medium cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all">
+                className="flex-1 py-2.5 border border-neutral-200 dark:border-[#232338] text-neutral-500 rounded-xl text-xs font-medium cursor-pointer hover:bg-neutral-50 dark:hover:bg-[#141422] transition-all">
                 Batal
               </button>
               <button onClick={handleDelete} disabled={deleting}
@@ -292,11 +292,11 @@ export default function CRMManager({ clients, onChange }: CRMManagerProps) {
           color: #111; outline: none; transition: border 0.2s;
         }
         .dark .form-input {
-          background: rgba(255,255,255,0.05);
-          border-color: rgba(255,255,255,0.08); color: #e5e5e5;
+          background: #141422;
+          border-color: #232338; color: #e5e5e5;
         }
         .form-input:focus { border-color: #555; }
-        .dark .form-input:focus { border-color: #666; }
+        .dark .form-input:focus { border-color: #7c5cfc; }
       `}</style>
     </div>
   )

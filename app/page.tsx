@@ -1,21 +1,25 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
-import type { Project, Category, Client, Tab, ProjectFormData, ProjectStatus, DashboardStats } from "@/types"
+import type { Project, Category, Client, Tab, ProjectFormData, ProjectStatus, DashboardStats, FinanceSummary } from "@/types"
 import { getProjects, createProject, updateProject, deleteProject, updateProjectStatus } from "@/actions/projects"
 import { getCategories } from "@/actions/categories"
 import { getClients } from "@/actions/clients"
+import { getFinanceSummary } from "@/actions/keuangan"
 import Sidebar from "@/components/layout/Sidebar"
 import StatsGrid from "@/components/dashboard/StatsGrid"
+import QuickActions from "@/components/dashboard/QuickActions"
+import UpcomingDeadlines from "@/components/dashboard/UpcomingDeadlines"
 import AnalyticsSection from "@/components/dashboard/AnalyticsSection"
 import ProjectList from "@/components/projects/ProjectList"
 import ProjectForm from "@/components/projects/ProjectForm"
 import ConfirmModal from "@/components/projects/ConfirmModal"
 import CategoryManager from "@/components/categories/CategoryManager"
 import CRMManager from "@/components/crm/CRMManager"
+import FinanceDashboard from "@/components/keuangan/FinanceDashboard"
 import Toast, { type ToastType } from "@/components/ui/Toast"
 import ErrorBoundary from "@/components/ErrorBoundary"
-import { PlusCircle, RefreshCw, Sun, Moon, Columns } from "lucide-react"
+import { PlusCircle, RefreshCw, Sun, Moon, Columns, Sparkles } from "lucide-react"
 
 
 export default function Home() {
@@ -23,6 +27,7 @@ export default function Home() {
   const [categories, setCategories] = useState<Category[]>([])
   const [clients, setClients]     = useState<Client[]>([])
   const [stats, setStats] = useState<DashboardStats>({ total: 0, onProgress: 0, revisi: 0, done: 0, cancel: 0, totalIncome: 0, pipelineIncome: 0 })
+  const [financeSummary, setFinanceSummary] = useState<FinanceSummary | null>(null)
   const [activeTab, setActiveTab] = useState<Tab>("dashboard")
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [darkMode, setDarkMode] = useState(false)
@@ -68,11 +73,12 @@ export default function Home() {
   const loadData = useCallback(async (showLoader = false) => {
     if (showLoader) setLoading(true)
     try {
-      const [p, c, cl] = await Promise.all([getProjects(), getCategories(), getClients()])
+      const [p, c, cl, fs] = await Promise.all([getProjects(), getCategories(), getClients(), getFinanceSummary()])
       setProjects(p)
       setCategories(c)
       setClients(cl)
       setStats(computeStats(p))
+      setFinanceSummary(fs)
       setLastSync(new Date().toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" }))
     } catch (err) {
       console.error("Failed to load data:", err)
@@ -162,10 +168,15 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f5f5f7] dark:bg-[#09090b] flex items-center justify-center">
+      <div className="min-h-screen bg-[#f5f5f7] dark:bg-[#0a0a12] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-6 h-6 rounded bg-neutral-950 dark:bg-neutral-100 text-white dark:text-neutral-950 flex items-center justify-center font-serif italic text-xs font-medium uppercase animate-pulse">ds</div>
-          <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-mono tracking-widest uppercase">Memuat...</span>
+          <div className="relative">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#7c5cfc] to-[#a78bfa] text-white flex items-center justify-center font-serif italic text-base shadow-lg animate-pulse">
+              ds
+            </div>
+            <div className="absolute -inset-1 rounded-xl bg-gradient-to-br from-[#7c5cfc]/20 to-[#a78bfa]/20 blur-lg animate-pulse" />
+          </div>
+          <span className="text-[10px] text-neutral-400 dark:text-[#5a5a6e]">Memuat...</span>
         </div>
       </div>
     )
@@ -173,7 +184,7 @@ export default function Home() {
 
   return (
     <ErrorBoundary>
-    <div className="min-h-screen bg-[#f5f5f7] dark:bg-[#09090b] text-[#1d1d1f] dark:text-[#f5f5f7] flex flex-col md:flex-row font-sans transition-colors duration-500">
+    <div className="min-h-screen bg-[#f5f5f7] dark:bg-[#0a0a12] text-[#1d1d1f] dark:text-[#e4e4ed] flex flex-col md:flex-row font-sans transition-colors duration-500">
       <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -182,68 +193,88 @@ export default function Home() {
       />
 
       <main className={`flex-1 p-4 sm:p-6 lg:p-8 w-full space-y-6 overflow-y-auto mb-16 md:mb-0 transition-all duration-300 mx-auto ${sidebarOpen ? "max-w-6xl" : "max-w-7xl"}`}>
-        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-neutral-200/30 dark:border-neutral-900 pb-6">
+        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 relative">
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neutral-200/30 dark:via-[#1e1e30] to-transparent" />
           <div>
             <div className="flex items-center gap-2" title={`Terakhir sinkron: ${lastSync}`}>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[8.5px] text-neutral-400 dark:text-neutral-500 font-mono uppercase tracking-[0.2em] font-medium">Live</span>
-              {lastSync && <span className="text-[8px] text-neutral-400/60 dark:text-neutral-600 font-mono">{lastSync}</span>}
+              <span className="relative flex w-1.5 h-1.5">
+                <span className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-40" />
+                <span className="relative w-1 h-1 rounded-full bg-emerald-500 m-auto" />
+              </span>
+              <span className="text-[9px] text-neutral-400 dark:text-[#5a5a6e]">Live</span>
+              {lastSync && <span className="text-[8px] text-neutral-400/60 dark:text-[#5a5a6e]/60">{lastSync}</span>}
             </div>
-            <h1 className="text-2xl sm:text-3xl font-light text-neutral-950 dark:text-neutral-50 tracking-tight mt-1.5 flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-light text-neutral-950 dark:text-[#e4e4ed] mt-1">
               {!sidebarOpen && (
-                <button onClick={() => setSidebarOpen(true)} className="hidden md:inline-flex p-1.5 mr-1 hover:bg-neutral-100 dark:hover:bg-neutral-900 text-neutral-400 hover:text-neutral-950 dark:hover:text-white rounded-lg transition-colors cursor-pointer">
+                <button onClick={() => setSidebarOpen(true)} className="hidden md:inline-flex p-1 mr-1 hover:bg-neutral-100 dark:hover:bg-[#141422] text-neutral-400 hover:text-neutral-950 dark:hover:text-[#e4e4ed] rounded-lg transition-colors cursor-pointer">
                   <Columns className="w-4 h-4" />
                 </button>
               )}
-              {activeTab === "dashboard" && <>Beranda <span className="font-serif italic font-normal text-neutral-400 dark:text-neutral-500">Studio</span></>}
-              {activeTab === "projects" && <>Proyek <span className="font-serif italic font-normal text-neutral-400 dark:text-neutral-500">Desain</span></>}
-              {activeTab === "crm" && <>Klien <span className="font-serif italic font-normal text-neutral-400 dark:text-neutral-500">CRM</span></>}
-              {activeTab === "analytics" && <>Laporan <span className="font-serif italic font-normal text-neutral-400 dark:text-neutral-500">Keuangan</span></>}
-              {activeTab === "categories" && <>Kategori <span className="font-serif italic font-normal text-neutral-400 dark:text-neutral-500">Layanan</span></>}
+              {activeTab === "dashboard" && <>Beranda <span className="font-serif italic text-[#7c5cfc] dark:text-[#a78bfa]">Studio</span></>}
+              {activeTab === "projects" && <>Proyek <span className="font-serif italic text-[#7c5cfc] dark:text-[#a78bfa]">Desain</span></>}
+              {activeTab === "keuangan" && <>Keuangan <span className="font-serif italic text-[#7c5cfc] dark:text-[#a78bfa]">Bisnis</span></>}
+              {activeTab === "crm" && <>Klien <span className="font-serif italic text-[#7c5cfc] dark:text-[#a78bfa]">CRM</span></>}
+              {activeTab === "analytics" && <>Laporan <span className="font-serif italic text-[#7c5cfc] dark:text-[#a78bfa]">Keuangan</span></>}
+              {activeTab === "categories" && <>Kategori <span className="font-serif italic text-[#7c5cfc] dark:text-[#a78bfa]">Layanan</span></>}
             </h1>
           </div>
 
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <button onClick={() => setDarkMode(!darkMode)} className="p-2 text-neutral-400 hover:text-neutral-950 dark:hover:text-white rounded-lg transition-all cursor-pointer bg-neutral-100/10 hover:bg-neutral-100/30 dark:bg-neutral-900/10 dark:hover:bg-neutral-900/30">
-              {darkMode ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-neutral-500" />}
+          <div className="flex items-center gap-2">
+            <button onClick={() => setDarkMode(!darkMode)} className="p-1.5 text-neutral-400 hover:text-neutral-950 dark:hover:text-[#e4e4ed] rounded-lg transition-all cursor-pointer hover:bg-neutral-100/30 dark:hover:bg-[#141422]/60">
+              {darkMode ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5" />}
             </button>
-
-            <button onClick={() => { setProjectToEdit(null); setIsModalOpen(true) }} className="px-4 py-1.5 bg-neutral-950 dark:bg-neutral-100 hover:bg-neutral-850 dark:hover:bg-white text-white dark:text-neutral-950 font-medium rounded-full text-xs flex items-center gap-2 transition-all cursor-pointer shadow-xs active:scale-[0.98]">
+            <button onClick={() => { setProjectToEdit(null); setIsModalOpen(true) }} className="px-4 py-1.5 bg-[#7c5cfc] hover:bg-[#6b4fe0] text-white text-xs font-medium rounded-full transition-all cursor-pointer flex items-center gap-1.5 active:scale-[0.97]">
               <PlusCircle className="w-3.5 h-3.5" />Baru
             </button>
           </div>
         </header>
 
-        <div className="space-y-6 min-h-[50vh] transition-all duration-300">
+        <div className="space-y-4 min-h-[50vh] transition-all duration-300">
           {activeTab === "dashboard" && (
-            <div className="space-y-6 animate-fade-in">
-              <StatsGrid stats={stats} />
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                <div className="lg:col-span-12">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-[0.2em]">Proyek Terbaru</h3>
-                      <p className="text-xs text-neutral-450 dark:text-neutral-400 mt-0.5">5 proyek terbaru</p>
-                    </div>
-                    <button onClick={() => setActiveTab("projects")} className="text-xs text-neutral-500 hover:text-neutral-950 dark:hover:text-white font-medium flex items-center gap-1 cursor-pointer">
-                      Lihat Semua &rarr;
-                    </button>
-                  </div>
-                  <ProjectList projects={projects} categories={categories} onEdit={handleEditClick} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} isDashboard={true} />
+            <div className="space-y-4 animate-fade-in">
+              <StatsGrid stats={stats} financeSummary={financeSummary} />
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                <div className="lg:col-span-7">
+                  <QuickActions
+                    onNewProject={() => { setProjectToEdit(null); setIsModalOpen(true) }}
+                    onNavigate={setActiveTab}
+                  />
                 </div>
+                <div className="lg:col-span-5">
+                  <UpcomingDeadlines
+                    projects={projects}
+                    onViewAll={() => setActiveTab("projects")}
+                  />
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-[#0f0f1a]/80 border border-neutral-200 dark:border-[#1e1e30] rounded-xl p-5 sm:p-6 shadow-xs">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-3.5 h-3.5 text-neutral-400 dark:text-[#5a5a6e]" />
+                    <h3 className="text-[10px] font-medium text-neutral-400 dark:text-[#5a5a6e]">Proyek Terbaru</h3>
+                  </div>
+                  <button onClick={() => setActiveTab("projects")} className="text-[10px] text-neutral-400 hover:text-neutral-950 dark:hover:text-[#a78bfa] transition-colors cursor-pointer">
+                    Lihat semua &rarr;
+                  </button>
+                </div>
+                <ProjectList projects={projects} categories={categories} onEdit={handleEditClick} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} isDashboard={true} />
               </div>
             </div>
           )}
 
           {activeTab === "projects" && (
             <div className="animate-fade-in">
-              <div className="mb-5">
-                <h3 className="text-[10px] font-medium text-neutral-400 dark:text-neutral-500 uppercase tracking-[0.2em]">Semua Proyek</h3>
-                <p className="text-xs text-neutral-450 dark:text-neutral-400 mt-0.5">Semua proyek yang pernah dikerjain.</p>
+              <div className="mb-4">
+                <h3 className="text-[10px] font-medium text-neutral-400 dark:text-[#5a5a6e]">Semua Proyek</h3>
+                <p className="text-xs text-neutral-400 dark:text-[#8b8b9e] mt-0.5">Semua proyek yang pernah dikerjain.</p>
               </div>
               <ProjectList projects={projects} categories={categories} onEdit={handleEditClick} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} />
             </div>
           )}
+
+          {activeTab === "keuangan" && <FinanceDashboard />}
 
           {activeTab === "analytics" && <AnalyticsSection projects={projects} darkMode={darkMode} />}
 
