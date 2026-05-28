@@ -24,7 +24,7 @@ export default function QuickActions({ onNewProject, onNavigate }: QuickActionsP
   }
 
   return (
-    <div className="bg-white dark:bg-[#0f0f1a]/80 border border-neutral-200 dark:border-[#1e1e30] rounded-xl p-5 sm:p-6 shadow-xs h-full flex flex-col">
+    <div className="bg-white dark:bg-[#0f0f1a]/80 border border-neutral-200 dark:border-[#1e1e30] rounded-2xl p-5 sm:p-6 shadow-xs h-full flex flex-col">
       <h3 className="text-[10px] font-medium text-neutral-400 dark:text-[#5a5a6e] mb-4">Aksi Cepat</h3>
       <div className="grid grid-cols-2 gap-3 flex-1">
         {actions.map((item) => (

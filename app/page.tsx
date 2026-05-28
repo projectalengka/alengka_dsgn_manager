@@ -231,35 +231,42 @@ export default function Home() {
 
         <div className="space-y-4 min-h-[50vh] transition-all duration-300">
           {activeTab === "dashboard" && (
-            <div className="space-y-4 animate-fade-in">
+            <div className="space-y-4 sm:space-y-6 animate-fade-in">
               <StatsGrid stats={stats} financeSummary={financeSummary} />
 
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                <div className="lg:col-span-6">
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 items-start">
+                {/* Kolom Kiri: Proyek Terbaru (Lebih Lebar) */}
+                <div className="xl:col-span-2 space-y-4 sm:space-y-6">
+                  <div className="bg-white dark:bg-[#0f0f1a]/80 border border-neutral-200 dark:border-[#1e1e30] rounded-2xl p-5 sm:p-6 shadow-xs">
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-[#7c5cfc]/10 flex items-center justify-center">
+                          <Sparkles className="w-4 h-4 text-[#7c5cfc]" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-semibold text-neutral-900 dark:text-[#e4e4ed]">Proyek Terbaru</h3>
+                          <p className="text-[10px] text-neutral-500 dark:text-[#8b8b9e]">Proyek yang baru saja ditambahkan</p>
+                        </div>
+                      </div>
+                      <button onClick={() => setActiveTab("projects")} className="text-xs font-medium text-[#7c5cfc] hover:text-[#6b4fe0] dark:text-[#a78bfa] dark:hover:text-[#c4b5fd] transition-colors cursor-pointer flex items-center gap-1 bg-[#7c5cfc]/5 hover:bg-[#7c5cfc]/10 px-3 py-1.5 rounded-lg">
+                        Lihat semua &rarr;
+                      </button>
+                    </div>
+                    <ProjectList projects={projects} categories={categories} onEdit={handleEditClick} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} isDashboard={true} />
+                  </div>
+                </div>
+
+                {/* Kolom Kanan: Quick Actions & Deadlines */}
+                <div className="xl:col-span-1 space-y-4 sm:space-y-6">
                   <QuickActions
                     onNewProject={() => { setProjectToEdit(null); setIsModalOpen(true) }}
                     onNavigate={setActiveTab}
                   />
-                </div>
-                <div className="lg:col-span-6">
                   <UpcomingDeadlines
                     projects={projects}
                     onViewAll={() => setActiveTab("projects")}
                   />
                 </div>
-              </div>
-
-              <div className="bg-white dark:bg-[#0f0f1a]/80 border border-neutral-200 dark:border-[#1e1e30] rounded-xl p-5 sm:p-6 shadow-xs">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-3.5 h-3.5 text-neutral-400 dark:text-[#5a5a6e]" />
-                    <h3 className="text-[10px] font-medium text-neutral-400 dark:text-[#5a5a6e]">Proyek Terbaru</h3>
-                  </div>
-                  <button onClick={() => setActiveTab("projects")} className="text-[10px] text-neutral-400 hover:text-neutral-950 dark:hover:text-[#a78bfa] transition-colors cursor-pointer">
-                    Lihat semua &rarr;
-                  </button>
-                </div>
-                <ProjectList projects={projects} categories={categories} onEdit={handleEditClick} onDelete={handleDeleteClick} onStatusChange={handleStatusChange} isDashboard={true} />
               </div>
             </div>
           )}

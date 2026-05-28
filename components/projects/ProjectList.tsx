@@ -155,26 +155,28 @@ export default function ProjectList({ projects, categories, onEdit, onDelete, on
         </div>
       ) : (
         <>
-          <div className="hidden md:block bg-white dark:bg-[#0f0f1a]/80 border border-neutral-200 dark:border-[#1e1e30] rounded-xl shadow-xs overflow-hidden animate-fade-in">
+          <div className={`hidden md:block bg-white dark:bg-[#0f0f1a]/80 border border-neutral-200 dark:border-[#1e1e30] rounded-2xl overflow-hidden animate-fade-in ${isDashboard ? 'shadow-none border-0 ring-1 ring-neutral-200/50 dark:ring-[#1e1e30]' : 'shadow-xs'}`}>
             <div className="overflow-x-auto max-h-[60vh] overflow-y-auto custom-scrollbar relative">
               <table className="w-full text-left border-collapse">
                 <thead className="sticky top-0 bg-white/95 dark:bg-[#0f0f1a]/95 backdrop-blur-md z-10 shadow-sm border-b border-neutral-100 dark:border-[#1e1e30]/50">
                   <tr className="text-[10px] uppercase font-bold tracking-wider text-neutral-400 dark:text-[#5a5a6e]">
-                    <th className="py-5 px-6 w-12"><input type="checkbox" checked={selectedIds.length === filteredProjects.length && filteredProjects.length > 0} onChange={(e) => setSelectedIds(e.target.checked ? filteredProjects.map((p) => p.id) : [])} className="w-4 h-4 rounded border-neutral-300 cursor-pointer accent-[#7c5cfc] dark:accent-[#7c5cfc]" /></th>
+                    {!isDashboard && <th className="py-5 px-6 w-12"><input type="checkbox" checked={selectedIds.length === filteredProjects.length && filteredProjects.length > 0} onChange={(e) => setSelectedIds(e.target.checked ? filteredProjects.map((p) => p.id) : [])} className="w-4 h-4 rounded border-neutral-300 cursor-pointer accent-[#7c5cfc] dark:accent-[#7c5cfc]" /></th>}
                     <th className="py-5 px-6">Klien & Proyek</th>
-                    <th className="py-5 px-4 text-center">Kategori</th>
+                    {!isDashboard && <th className="py-5 px-4 text-center">Kategori</th>}
                     <th className="py-5 px-4 text-center">Status</th>
                     <th className="py-5 px-4 text-right">Nilai</th>
-                    <th className="py-5 px-4 text-center">Deadline</th>
+                    {!isDashboard && <th className="py-5 px-4 text-center">Deadline</th>}
                     <th className="py-5 px-6 text-right">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-100 dark:divide-[#1e1e30]/40">
                   {filteredProjects.map((p) => (
                     <tr key={p.id} className="hover:bg-neutral-50/80 dark:hover:bg-[#141422]/50 transition-colors group">
-                      <td className="py-5 px-6 text-center">
-                        <input type="checkbox" checked={selectedIds.includes(p.id)} onChange={() => setSelectedIds((prev) => prev.includes(p.id) ? prev.filter((id) => id !== p.id) : [...prev, p.id])} className="w-4 h-4 rounded border-neutral-300 cursor-pointer accent-[#7c5cfc] dark:accent-[#7c5cfc] opacity-40 group-hover:opacity-100 transition-opacity" />
-                      </td>
+                      {!isDashboard && (
+                        <td className="py-5 px-6 text-center">
+                          <input type="checkbox" checked={selectedIds.includes(p.id)} onChange={() => setSelectedIds((prev) => prev.includes(p.id) ? prev.filter((id) => id !== p.id) : [...prev, p.id])} className="w-4 h-4 rounded border-neutral-300 cursor-pointer accent-[#7c5cfc] dark:accent-[#7c5cfc] opacity-40 group-hover:opacity-100 transition-opacity" />
+                        </td>
+                      )}
                       <td className="py-5 px-6">
                         <div className="flex items-center gap-4">
                           <div className="w-11 h-11 rounded-xl bg-neutral-100/80 dark:bg-[#141422]/50 border border-neutral-200/50 dark:border-[#232338] flex items-center justify-center text-neutral-400 dark:text-[#8b8b9e] shrink-0">{getCatIcon(p.categoryId)}</div>
@@ -197,11 +199,13 @@ export default function ProjectList({ projects, categories, onEdit, onDelete, on
                           </div>
                         </div>
                       </td>
-                      <td className="py-5 px-4 text-center">
-                        <span className="inline-flex items-center gap-1.5 text-[12px] text-neutral-500 dark:text-[#8b8b9e] font-medium">
-                          {getCatIcon(p.categoryId)}{getCatName(p.categoryId)}
-                        </span>
-                      </td>
+                      {!isDashboard && (
+                        <td className="py-5 px-4 text-center">
+                          <span className="inline-flex items-center gap-1.5 text-[12px] text-neutral-500 dark:text-[#8b8b9e] font-medium">
+                            {getCatIcon(p.categoryId)}{getCatName(p.categoryId)}
+                          </span>
+                        </td>
+                      )}
                       <td className="py-5 px-4 text-center">
                         <div className="relative inline-flex items-center justify-center group-hover:scale-105 transition-transform">
                           <select value={p.status} onChange={(e) => onStatusChange(p.id, e.target.value as ProjectStatus)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
@@ -214,12 +218,14 @@ export default function ProjectList({ projects, categories, onEdit, onDelete, on
                         </div>
                       </td>
                       <td className="py-5 px-4 text-right font-mono text-neutral-800 dark:text-[#c8c8d8] font-semibold text-[13px]">{formatCurrency(p.price)}</td>
-                      <td className="py-5 px-4 text-center">
-                        <div className="space-y-1">
-                          <span className="text-neutral-800 dark:text-[#c8c8d8] block text-[12px] font-semibold">{formatDate(p.deadline)}</span>
-                          <span className="text-[10px] text-neutral-400 dark:text-[#5a5a6e] block">Dibuat {formatDate(p.createdAt)}</span>
-                        </div>
-                      </td>
+                      {!isDashboard && (
+                        <td className="py-5 px-4 text-center">
+                          <div className="space-y-1">
+                            <span className="text-neutral-800 dark:text-[#c8c8d8] block text-[12px] font-semibold">{formatDate(p.deadline)}</span>
+                            <span className="text-[10px] text-neutral-400 dark:text-[#5a5a6e] block">Dibuat {formatDate(p.createdAt)}</span>
+                          </div>
+                        </td>
+                      )}
                       <td className="py-5 px-6 text-right">
                         <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button onClick={() => onEdit(p)} className="p-2 text-neutral-400 dark:text-[#5a5a6e] hover:text-neutral-800 dark:hover:text-[#e4e4ed] hover:bg-neutral-100 dark:hover:bg-[#1a1a2e] rounded-lg transition-all cursor-pointer" title="Edit"><Edit2 className="w-4 h-4" /></button>
@@ -235,10 +241,12 @@ export default function ProjectList({ projects, categories, onEdit, onDelete, on
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 md:hidden pb-20 animate-fade-in">
             {filteredProjects.map((p) => (
-              <div key={p.id} className="bg-white dark:bg-[#0f0f1a]/80 border border-neutral-200 dark:border-[#1e1e30] rounded-xl p-5 space-y-4 shadow-xs">
+              <div key={p.id} className="bg-white dark:bg-[#0f0f1a]/80 border border-neutral-200 dark:border-[#1e1e30] rounded-2xl p-5 space-y-4 shadow-xs">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-start gap-2 max-w-[70%]">
-                    <input type="checkbox" checked={selectedIds.includes(p.id)} onChange={() => setSelectedIds((prev) => prev.includes(p.id) ? prev.filter((id) => id !== p.id) : [...prev, p.id])} className="w-3.5 h-3.5 rounded border-neutral-300 mt-0.5 cursor-pointer" />
+                    {!isDashboard && (
+                      <input type="checkbox" checked={selectedIds.includes(p.id)} onChange={() => setSelectedIds((prev) => prev.includes(p.id) ? prev.filter((id) => id !== p.id) : [...prev, p.id])} className="w-3.5 h-3.5 rounded border-neutral-300 mt-0.5 cursor-pointer shrink-0" />
+                    )}
                     <div className="space-y-0.5 truncate">
                       <span className="text-[9px] font-medium uppercase tracking-widest text-neutral-400 dark:text-[#5a5a6e] block truncate">{p.clientName}</span>
                       <h4 className="text-xs font-semibold text-neutral-850 dark:text-[#c8c8d8] leading-tight">{p.projectTitle}</h4>

@@ -71,8 +71,8 @@ export default function StatsGrid({ stats, financeSummary }: StatsGridProps) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="bg-white dark:bg-[#0f0f1a]/80 border border-neutral-200 dark:border-[#1e1e30] rounded-xl p-5 sm:p-6 shadow-xs">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="bg-white dark:bg-[#0f0f1a]/80 border border-neutral-200 dark:border-[#1e1e30] rounded-2xl p-5 sm:p-6 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1.5">
@@ -132,7 +132,7 @@ export default function StatsGrid({ stats, financeSummary }: StatsGridProps) {
           return (
             <div
               key={idx}
-              className="group bg-white dark:bg-[#0f0f1a]/60 border border-neutral-200/60 dark:border-[#1e1e30] rounded-xl p-4 hover:border-neutral-300 dark:hover:border-[#7c5cfc]/20 transition-all duration-300"
+              className="group bg-white dark:bg-[#0f0f1a]/60 border border-neutral-200/60 dark:border-[#1e1e30] rounded-2xl p-4 hover:border-neutral-300 dark:hover:border-[#7c5cfc]/20 transition-all duration-300"
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-1.5 text-neutral-400 dark:text-[#5a5a6e]">
