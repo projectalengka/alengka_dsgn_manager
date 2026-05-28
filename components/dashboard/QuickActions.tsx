@@ -24,19 +24,19 @@ export default function QuickActions({ onNewProject, onNavigate }: QuickActionsP
   }
 
   return (
-    <div className="bg-white dark:bg-[#0f0f1a]/80 border border-neutral-200 dark:border-[#1e1e30] rounded-xl p-5 sm:p-6 shadow-xs h-full">
+    <div className="bg-white dark:bg-[#0f0f1a]/80 border border-neutral-200 dark:border-[#1e1e30] rounded-xl p-5 sm:p-6 shadow-xs h-full flex flex-col">
       <h3 className="text-[10px] font-medium text-neutral-400 dark:text-[#5a5a6e] mb-4">Aksi Cepat</h3>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-3 flex-1">
         {actions.map((item) => (
           <button
             key={item.action}
             onClick={() => handle(item.action)}
-            className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border border-neutral-200/50 dark:border-[#1e1e30] bg-neutral-50/50 dark:bg-[#141422]/30 hover:bg-white dark:hover:bg-[#141422]/60 transition-all duration-200 active:scale-[0.98] cursor-pointer text-left"
+            className="flex flex-col items-center justify-center gap-3 p-4 rounded-xl border border-neutral-200/50 dark:border-[#1e1e30] bg-neutral-50/50 dark:bg-[#141422]/30 hover:bg-white dark:hover:bg-[#1a1a2e] hover:border-neutral-300 dark:hover:border-[#7c5cfc]/30 transition-all duration-300 active:scale-[0.98] cursor-pointer h-full group"
           >
-            <span className={`p-1.5 rounded-lg ${item.color}`}>
-              <item.icon className="w-3.5 h-3.5" />
+            <span className={`p-2.5 rounded-xl ${item.color} group-hover:scale-110 transition-transform duration-300`}>
+              <item.icon className="w-5 h-5" />
             </span>
-            <span className="text-xs font-medium text-neutral-700 dark:text-[#a0a0b4]">{item.label}</span>
+            <span className="text-xs font-medium text-neutral-700 dark:text-[#c8c8d8]">{item.label}</span>
           </button>
         ))}
       </div>
